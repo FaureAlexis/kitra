@@ -7,6 +7,7 @@ import { HudHeader } from '../ui/HudHeader';
 import { ToggleButton } from '../ui/ToggleButton';
 import { ColorControlsPanel } from '../ui/ColorControlsPanel';
 import { AIAssistantPanel } from '../ui/AIAssistantPanel';
+import { KitStatusPanel } from '../ui/KitStatusPanel';
 import { ActionsBar } from '../ui/ActionsBar';
 import { LevaControls } from '../ui/LevaControls';
 import { SafeCanvas } from '../3d/SafeCanvas';
@@ -15,6 +16,7 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useModelLoader } from '../hooks/useModelLoader';
 import { useDesignLoader } from '../../../../../hooks/useDesignLoader';
 import { useTextureStorage } from '../../../../../hooks/useTextureStorage';
+import { useAITexture } from '../../../../../lib/services/ai-texture.service';
 import styles from '../../builder.module.css';
 
 interface BuilderLayoutProps {
@@ -32,6 +34,7 @@ export const BuilderLayout = React.memo(function BuilderLayout({
   const [primaryColor, setPrimaryColor] = useState('#ec4899');
   const [secondaryColor, setSecondaryColor] = useState('#ffffff');
   const [pattern, setPattern] = useState('solid');
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   
   // AI Texture state
   const [currentTextureUrl, setCurrentTextureUrl] = useState<string | null>(null);
@@ -43,6 +46,7 @@ export const BuilderLayout = React.memo(function BuilderLayout({
   // Custom hooks
   const designLoader = useDesignLoader();
   const textureStorage = useTextureStorage();
+  const { textures } = useAITexture();
   
   useKeyboardShortcuts({
     onToggleControls: () => setShowControls(prev => !prev),
@@ -120,7 +124,12 @@ export const BuilderLayout = React.memo(function BuilderLayout({
   return (
     <div className={styles.builderContainer}>
       {/* Full-screen 3D Canvas */}
-      <div className={styles.canvasWrapper}>
+      <div 
+        className={`${styles.canvasWrapper} ${backgroundImage ? styles.withBackgroundImage : ''}`}
+        style={{
+          backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined
+        }}
+      >
         <Suspense fallback={
           <div className={styles.loadingOverlay}>
             <div className={styles.loadingSpinner}></div>
@@ -165,9 +174,11 @@ export const BuilderLayout = React.memo(function BuilderLayout({
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
             pattern={pattern}
+            backgroundImage={backgroundImage}
             onPrimaryColorChange={setPrimaryColor}
             onSecondaryColorChange={setSecondaryColor}
             onPatternChange={setPattern}
+            onBackgroundImageChange={setBackgroundImage}
           />
         </div>
       )}
@@ -179,11 +190,22 @@ export const BuilderLayout = React.memo(function BuilderLayout({
         loadedDesign={designLoader.design} // Pass loaded design to prefill AI panel
       />
 
+      {/* Kit Status Panel - Bottom Right */}
+      <KitStatusPanel 
+        currentTextureId={currentTextureId}
+        currentTextureUrl={currentTextureUrl}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        pattern={pattern}
+        backgroundImage={backgroundImage}
+        textures={textures}
+      />
+
       {/* Actions Bar */}
       <ActionsBar currentTextureId={currentTextureId} />
 
       {/* Leva Controls */}
-      {/* <LevaControls showLeva={showLeva} /> */}
+      <LevaControls showLeva={showLeva} />
     </div>
   );
 }); 
