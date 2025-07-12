@@ -7,7 +7,7 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: #000;
+  background: #f8fafc;
 }
 
 .canvasWrapper {
@@ -17,19 +17,19 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: linear-gradient(135deg, #0f0f0f 0%, #1a0f1a 50%, #0f0f1a 100%);
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f8fafc 100%);
 }
 
 /* Glass Panel Base Styles */
 .glassPanel {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 16px;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, opacity, background;
@@ -38,11 +38,11 @@
 }
 
 .glassPanel:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.15);
   box-shadow: 
-    0 16px 64px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 16px 64px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
     0 0 0 1px rgba(236, 72, 153, 0.1);
   transform: translateZ(0) translateY(-2px);
 }
@@ -77,17 +77,17 @@
 .hudTitle {
   font-size: 1.5rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(0, 0, 0, 0.9);
   margin: 0;
   letter-spacing: 0.5px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .hudSubtitle {
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   margin-top: 4px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Control Panels */
@@ -103,7 +103,7 @@
   max-height: calc(100vh - 140px);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
   perspective: 1000px;
 }
 
@@ -120,7 +120,7 @@
   max-height: calc(100vh - 140px);
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
   perspective: 1000px;
 }
 
@@ -136,7 +136,7 @@
 
 .controlsWrapper::-webkit-scrollbar-thumb,
 .leftControlsWrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.3);
   border-radius: 3px;
 }
 
@@ -184,14 +184,14 @@
   gap: 8px;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 .panelTitle {
   font-size: 1rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9);
   margin: 0;
   transition: color 0.2s ease;
 }
@@ -210,11 +210,11 @@
 }
 
 .controlPanel:hover .panelTitle {
-  color: rgba(255, 255, 255, 1);
+  color: rgba(0, 0, 0, 1);
 }
 
 .controlPanel:hover .panelHeader {
-  border-bottom-color: rgba(255, 255, 255, 0.15);
+  border-bottom-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Actions Bar */
@@ -231,10 +231,10 @@
 
 .actionButton {
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -247,12 +247,12 @@
 }
 
 .actionButton:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
   box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .actionButton.primary {
@@ -279,10 +279,10 @@
   width: 48px;
   height: 48px;
   padding: 0;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -293,11 +293,11 @@
 }
 
 .toggleButton:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
   transform: translateY(-1px) scale(1.02);
   box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(236, 72, 153, 0.1);
 }
 
@@ -312,8 +312,8 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -322,9 +322,9 @@
 }
 
 .glassColorPickerContainer:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
@@ -379,13 +379,13 @@
 .colorHex {
   font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 0.7);
   font-weight: 500;
   letter-spacing: 0.5px;
 }
 
 .glassLabel {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9);
   font-size: 0.875rem;
   font-weight: 500;
   margin-bottom: 8px;
@@ -403,10 +403,10 @@
   width: 100%;
   padding: 12px 16px;
   padding-right: 44px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9);
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -419,22 +419,22 @@
 }
 
 .glassSelect:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
 .glassSelect:focus {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 1);
   border-color: rgba(236, 72, 153, 0.4);
   box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
   transform: translateY(-1px);
 }
 
 .glassSelect option {
-  background: rgba(15, 15, 15, 0.95);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
+  color: rgba(0, 0, 0, 0.9);
   padding: 8px 12px;
   border: none;
 }
@@ -444,7 +444,7 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   pointer-events: none;
   transition: all 0.2s ease;
 }
@@ -459,10 +459,10 @@
   width: 100%;
   min-height: 80px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9);
   font-size: 0.875rem;
   font-family: inherit;
   line-height: 1.5;
@@ -474,21 +474,21 @@
 }
 
 .glassTextarea:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
 .glassTextarea:focus {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 1);
   border-color: rgba(236, 72, 153, 0.4);
   box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
   transform: translateY(-1px);
 }
 
 .glassTextarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.5);
   font-style: italic;
 }
 
@@ -498,28 +498,26 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9);
   font-size: 0.875rem;
   font-weight: 500;
-  font-family: inherit;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  outline: none;
   text-decoration: none;
-  user-select: none;
+  outline: none;
 }
 
 .glassButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .glassButton:active:not(:disabled) {
@@ -571,57 +569,63 @@
   align-items: center;
   gap: 12px;
   padding: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 8px;
 }
 
 .colorInput {
   width: 40px;
   height: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   cursor: pointer;
   background: transparent;
 }
 
 .colorLabel {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(0, 0, 0, 0.9);
   font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: block;
 }
 
 /* Select Input Styling (Legacy - to be deprecated) */
 .selectInput {
   width: 100%;
-  padding: 10px 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.9);
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  color: rgba(0, 0, 0, 0.9);
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .selectInput:hover,
 .selectInput:focus {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.3);
-  outline: none;
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Upload Area */
 .uploadArea {
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border: 2px dashed rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   padding: 24px;
   text-align: center;
   transition: all 0.2s ease;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .uploadArea:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 /* Leva Integration */
@@ -639,7 +643,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -649,7 +653,7 @@
 .loadingSpinner {
   width: 48px;
   height: 48px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(0, 0, 0, 0.1);
   border-top-color: var(--primary, #ec4899);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -743,51 +747,12 @@
   
   .glassPanel:active,
   .glassColorPickerContainer:active {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.95);
     transform: scale(0.98);
   }
 }
 
 /* Dark mode color adjustments */
 @media (prefers-color-scheme: light) {
-  .glassPanel {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
-  
-  .hudTitle,
-  .hudSubtitle,
-  .panelTitle,
-  .colorLabel,
-  .glassLabel {
-    color: rgba(0, 0, 0, 0.9);
-  }
-  
-  .actionButton {
-    background: rgba(0, 0, 0, 0.1);
-    border-color: rgba(0, 0, 0, 0.2);
-    color: rgba(0, 0, 0, 0.9);
-  }
-  
-  .glassColorPickerContainer,
-  .glassSelect,
-  .glassTextarea,
-  .glassButton {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-    color: rgba(0, 0, 0, 0.9);
-  }
-  
-  .glassButton:hover:not(:disabled) {
-    background: rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.2);
-  }
-  
-  .glassTextarea::placeholder {
-    color: rgba(0, 0, 0, 0.5);
-  }
-  
-  .colorHex {
-    color: rgba(0, 0, 0, 0.7);
-  }
+  /* Light mode is now the default, no overrides needed */
 } 

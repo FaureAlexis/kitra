@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Text } from '@react-three/drei';
 import { useControls } from 'leva';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -15,6 +15,10 @@ interface GLBModelProps {
   pattern?: string;
   textureUrl?: string | null;
   textureId?: string | null;
+  playerName?: string;
+  playerNumber?: string;
+  flockingColor?: string;
+  fontSize?: number;
 }
 
 export const GLBModel = React.memo(function GLBModel({ 
@@ -23,7 +27,11 @@ export const GLBModel = React.memo(function GLBModel({
   secondaryColor: propSecondaryColor,
   pattern: propPattern,
   textureUrl,
-  textureId
+  textureId,
+  playerName = '',
+  playerNumber = '',
+  flockingColor = '#ffffff',
+  fontSize = 0.4
 }: GLBModelProps) {
   const meshRef = useRef<THREE.Group>(null);
   const hasLoadedRef = useRef(false);
@@ -105,7 +113,7 @@ export const GLBModel = React.memo(function GLBModel({
             console.error('Failed to load texture:', error);
           });
       }
-    } else if (gltf?.scene) {
+    } else {
       // Remove texture and restore original materials
       console.log('GLB removing texture from materials');
       gltf.scene.traverse((child) => {
@@ -165,6 +173,36 @@ export const GLBModel = React.memo(function GLBModel({
   return (
     <group ref={meshRef}>
       <primitive object={gltf.scene} />
+      
+      {/* Player Name on back of jersey */}
+      {playerName && (
+        <Text
+          position={[0, 0.5, -0.1]}
+          fontSize={fontSize * 0.8}
+          color={flockingColor}
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.02}
+          rotation={[0, Math.PI, 0]}
+        >
+          {playerName.toUpperCase()}
+        </Text>
+      )}
+      
+      {/* Player Number on back of jersey */}
+      {playerNumber && (
+        <Text
+          position={[0, -0.2, -0.1]}
+          fontSize={fontSize * 1.5}
+          color={flockingColor}
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.1}
+          rotation={[0, Math.PI, 0]}
+        >
+          {playerNumber}
+        </Text>
+      )}
       
       {/* Texture overlay indicator */}
       {shouldUseTexture && appliedTexture && (

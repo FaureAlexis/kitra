@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import { Text } from '@react-three/drei';
 import { useControls } from 'leva';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -13,6 +14,10 @@ interface BasicModelProps {
   pattern?: string;
   textureUrl?: string | null;
   textureId?: string | null;
+  playerName?: string;
+  playerNumber?: string;
+  flockingColor?: string;
+  fontSize?: number;
 }
 
 export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
@@ -20,7 +25,11 @@ export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
   secondaryColor: propSecondaryColor,
   pattern: propPattern,
   textureUrl,
-  textureId
+  textureId,
+  playerName = '',
+  playerNumber = '',
+  flockingColor = '#ffffff',
+  fontSize = 0.4
 }) {
   const meshRef = useRef<THREE.Group>(null);
   const materialRefs = useRef<THREE.MeshStandardMaterial[]>([]);
@@ -157,6 +166,36 @@ export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
         <boxGeometry args={[0.6, 0.8, 0.01]} />
         {createMaterial(secondaryColor, 6)}
       </mesh>
+      
+      {/* Player Name on back of jersey */}
+      {playerName && (
+        <Text
+          position={[0, 0.5, -0.1]}
+          fontSize={fontSize * 0.8}
+          color={flockingColor}
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.02}
+          rotation={[0, Math.PI, 0]}
+        >
+          {playerName.toUpperCase()}
+        </Text>
+      )}
+      
+      {/* Player Number on back of jersey */}
+      {playerNumber && (
+        <Text
+          position={[0, -0.2, -0.1]}
+          fontSize={fontSize * 1.5}
+          color={flockingColor}
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.1}
+          rotation={[0, Math.PI, 0]}
+        >
+          {playerNumber}
+        </Text>
+      )}
       
       {/* Texture overlay indicator */}
       {shouldUseTexture && appliedTexture && (

@@ -17,15 +17,15 @@ export const LevaControls = React.memo(function LevaControls({ showLeva }: LevaC
         collapsed={false}
         theme={{
           colors: {
-            elevation1: 'rgba(0, 0, 0, 0.3)',
-            elevation2: 'rgba(0, 0, 0, 0.4)',
-            elevation3: 'rgba(0, 0, 0, 0.5)',
+            elevation1: 'rgba(255, 255, 255, 0.9)',
+            elevation2: 'rgba(255, 255, 255, 0.8)',
+            elevation3: 'rgba(255, 255, 255, 0.7)',
             accent1: '#ec4899',
             accent2: '#f472b6',
             accent3: '#f9a8d4',
-            highlight1: 'rgba(255, 255, 255, 0.1)',
-            highlight2: 'rgba(255, 255, 255, 0.2)',
-            highlight3: 'rgba(255, 255, 255, 0.3)',
+            highlight1: 'rgba(0, 0, 0, 0.1)',
+            highlight2: 'rgba(0, 0, 0, 0.2)',
+            highlight3: 'rgba(0, 0, 0, 0.3)',
           }
         }}
       />

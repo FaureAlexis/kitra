@@ -1,14 +1,15 @@
 'use client';
 
-import React, { Suspense, useState } from 'react';
+import React, { useState, Suspense } from 'react';
+import { Scene } from '../3d/Scene';
+import { SafeCanvas } from '../3d/SafeCanvas';
 import { HudHeader } from '../ui/HudHeader';
 import { ToggleButton } from '../ui/ToggleButton';
 import { ColorControlsPanel } from '../ui/ColorControlsPanel';
+import { FlockingControlsPanel } from '../ui/FlockingControlsPanel';
 import { AIAssistantPanel } from '../ui/AIAssistantPanel';
 import { ActionsBar } from '../ui/ActionsBar';
 import { LevaControls } from '../ui/LevaControls';
-import { SafeCanvas } from '../3d/SafeCanvas';
-import { Scene } from '../3d/Scene';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useModelLoader } from '../hooks/useModelLoader';
 import styles from '../../builder.module.css';
@@ -25,6 +26,12 @@ export const BuilderLayout = React.memo(function BuilderLayout({
   const [primaryColor, setPrimaryColor] = useState('#ec4899');
   const [secondaryColor, setSecondaryColor] = useState('#ffffff');
   const [pattern, setPattern] = useState('solid');
+  
+  // Flocking state
+  const [playerName, setPlayerName] = useState('');
+  const [playerNumber, setPlayerNumber] = useState('');
+  const [flockingColor, setFlockingColor] = useState('#ffffff');
+  const [fontSize, setFontSize] = useState(0.4);
   
   // AI Texture state
   const [currentTextureUrl, setCurrentTextureUrl] = useState<string | null>(null);
@@ -66,6 +73,10 @@ export const BuilderLayout = React.memo(function BuilderLayout({
               pattern={pattern}
               textureUrl={currentTextureUrl}
               textureId={currentTextureId}
+              playerName={playerName}
+              playerNumber={playerNumber}
+              flockingColor={flockingColor}
+              fontSize={fontSize}
             />
           </SafeCanvas>
         </Suspense>
@@ -80,7 +91,7 @@ export const BuilderLayout = React.memo(function BuilderLayout({
         onToggle={() => setShowControls(!showControls)}
       />
 
-      {/* Color Controls Panel - Left Side */}
+      {/* Left Controls Panel - Color Controls & Flocking */}
       {showControls && (
         <div className={styles.leftControlsWrapper}>
           <ColorControlsPanel
@@ -90,6 +101,17 @@ export const BuilderLayout = React.memo(function BuilderLayout({
             onPrimaryColorChange={setPrimaryColor}
             onSecondaryColorChange={setSecondaryColor}
             onPatternChange={setPattern}
+          />
+          
+          <FlockingControlsPanel
+            playerName={playerName}
+            playerNumber={playerNumber}
+            flockingColor={flockingColor}
+            fontSize={fontSize}
+            onPlayerNameChange={setPlayerName}
+            onPlayerNumberChange={setPlayerNumber}
+            onFlockingColorChange={setFlockingColor}
+            onFontSizeChange={setFontSize}
           />
         </div>
       )}
