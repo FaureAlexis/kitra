@@ -229,6 +229,14 @@
   padding: 16px 24px;
 }
 
+.actionsBar:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 
+    0 16px 64px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 1px rgba(236, 72, 153, 0.1);
+}
+
 .actionButton {
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.8);
@@ -254,15 +262,16 @@
     0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
-.actionButton.primary {
-  background: rgba(236, 72, 153, 0.2);
-  border-color: rgba(236, 72, 153, 0.4);
+  .actionButton.primary {
+  background: #ec4899;
+  border-color: #ec4899;
   color: #fff;
 }
 
 .actionButton.primary:hover {
-  background: rgba(236, 72, 153, 0.3);
-  border-color: rgba(236, 72, 153, 0.5);
+  background: #ec4899;
+  border-color: #ec4899;
+  transform: translateY(-1px) scale(1.02);
   box-shadow: 
     0 8px 24px rgba(236, 72, 153, 0.3),
     0 0 0 1px rgba(236, 72, 153, 0.2);

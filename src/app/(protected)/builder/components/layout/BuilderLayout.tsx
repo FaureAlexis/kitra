@@ -150,7 +150,7 @@ export const BuilderLayout = React.memo(function BuilderLayout({
       )}
 
       {/* HUD Header */}
-      <HudHeader />
+      {/* <HudHeader /> */}
 
       {/* Toggle Button */}
       <ToggleButton 
@@ -183,7 +183,7 @@ export const BuilderLayout = React.memo(function BuilderLayout({
       <ActionsBar currentTextureId={currentTextureId} />
 
       {/* Leva Controls */}
-      <LevaControls showLeva={showLeva} />
+      {/* <LevaControls showLeva={showLeva} /> */}
     </div>
   );
 }); 
