@@ -25,6 +25,8 @@
     "blockchain:deploy:nuclear": "hardhat run scripts/deploy-nuclear.js --network spicy",
     "blockchain:diagnostics": "hardhat run scripts/deploy-diagnostics.js --network spicy",
     "blockchain:monitor": "hardhat run scripts/transaction-monitor.js --network spicy",
+    "blockchain:test": "hardhat run scripts/verify-deployment.js --network spicy",
+    "blockchain:check": "hardhat run scripts/check-deployment.js --network spicy",
     "blockchain:verify": "hardhat verify --network spicy",
     "prepare": "husky install"
   },
