@@ -1,5 +1,7 @@
 // AI Texture Generation Service
-// Handles communication with DALL-E 3 API and texture management
+// Handles communication with GPT-image-1 API and texture management
+
+import { useTextureStorage, type StoredTexture } from '../../hooks/useTextureStorage';
 
 export interface TextureGenerationOptions {
   prompt: string;
@@ -10,30 +12,15 @@ export interface TextureGenerationOptions {
   elements?: string[];
 }
 
-export interface GeneratedTexture {
-  id: string;
-  textureData: string; // base64 encoded image
-  metadata: {
-    prompt: string;
-    style: string;
-    dimensions: string;
-    format: string;
-    timestamp: number;
-  };
-  blob?: Blob;
-  url?: string;
-}
-
 export interface TextureGenerationResult {
   success: boolean;
-  texture?: GeneratedTexture;
+  texture?: StoredTexture;
   error?: string;
 }
 
 export class AITextureService {
   private static instance: AITextureService;
   private baseUrl: string;
-  private generatedTextures: Map<string, GeneratedTexture> = new Map();
 
   private constructor() {
     this.baseUrl = process.env.NODE_ENV === 'production' 
@@ -49,7 +36,7 @@ export class AITextureService {
   }
 
   /**
-   * Generate a new texture using DALL-E 3
+   * Generate a new texture using GPT-image-1
    */
   async generateTexture(options: TextureGenerationOptions): Promise<TextureGenerationResult> {
     try {
@@ -86,15 +73,23 @@ export class AITextureService {
         };
       }
 
-      // Create texture object
-      const texture = await this.processGeneratedTexture(data.texture, data.metadata);
-      
-      // Cache the texture
-      this.generatedTextures.set(texture.id, texture);
+      // Create StoredTexture object
+      const storedTexture: StoredTexture = {
+        id: this.generateTextureId(),
+        textureData: data.texture,
+        metadata: {
+          prompt: options.prompt,
+          style: options.style || 'modern',
+          kitType: options.kitType || 'home',
+          timestamp: Date.now(),
+          dimensions: data.metadata?.dimensions || '1024x1024',
+          format: data.metadata?.format || 'png'
+        }
+      };
 
       return {
         success: true,
-        texture
+        texture: storedTexture
       };
 
     } catch (error) {
@@ -107,86 +102,10 @@ export class AITextureService {
   }
 
   /**
-   * Process the base64 texture data into a usable format
-   */
-  private async processGeneratedTexture(
-    base64Data: string, 
-    metadata: any
-  ): Promise<GeneratedTexture> {
-    const id = this.generateTextureId();
-    
-    // Convert base64 to blob for better memory management
-    const blob = this.base64ToBlob(base64Data, 'image/png');
-    const url = URL.createObjectURL(blob);
-
-    return {
-      id,
-      textureData: base64Data,
-      metadata,
-      blob,
-      url
-    };
-  }
-
-  /**
-   * Convert base64 string to Blob
-   */
-  private base64ToBlob(base64: string, mimeType: string): Blob {
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-    
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: mimeType });
-  }
-
-  /**
    * Generate unique texture ID
    */
   private generateTextureId(): string {
     return `texture_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Get cached texture by ID
-   */
-  getTexture(id: string): GeneratedTexture | undefined {
-    return this.generatedTextures.get(id);
-  }
-
-  /**
-   * Get all cached textures
-   */
-  getAllTextures(): GeneratedTexture[] {
-    return Array.from(this.generatedTextures.values());
-  }
-
-  /**
-   * Clear texture cache and free memory
-   */
-  clearCache(): void {
-    // Revoke object URLs to prevent memory leaks
-    this.generatedTextures.forEach(texture => {
-      if (texture.url) {
-        URL.revokeObjectURL(texture.url);
-      }
-    });
-    
-    this.generatedTextures.clear();
-  }
-
-  /**
-   * Remove specific texture from cache
-   */
-  removeTexture(id: string): boolean {
-    const texture = this.generatedTextures.get(id);
-    if (texture?.url) {
-      URL.revokeObjectURL(texture.url);
-    }
-    return this.generatedTextures.delete(id);
   }
 
   /**
@@ -234,24 +153,6 @@ export class AITextureService {
       suggestions: issues.length > 0 ? issues : undefined
     };
   }
-
-  /**
-   * Get texture generation statistics
-   */
-  getStats(): {
-    totalGenerated: number;
-    cachedTextures: number;
-    memoryUsage: string;
-  } {
-    const cachedCount = this.generatedTextures.size;
-    const estimatedSize = cachedCount * 1024 * 1024; // Rough estimate: 1MB per texture
-    
-    return {
-      totalGenerated: cachedCount, // This could be tracked separately
-      cachedTextures: cachedCount,
-      memoryUsage: `${(estimatedSize / 1024 / 1024).toFixed(1)} MB`
-    };
-  }
 }
 
 // Export singleton instance
@@ -259,16 +160,20 @@ export const aiTextureService = AITextureService.getInstance();
 
 // Helper function for React components
 export const useAITexture = () => {
+  const textureStorage = useTextureStorage();
+  
   return {
-    generateTexture: (options: TextureGenerationOptions) => 
-      aiTextureService.generateTexture(options),
-    getTexture: (id: string) => aiTextureService.getTexture(id),
-    getAllTextures: () => aiTextureService.getAllTextures(),
-    clearCache: () => aiTextureService.clearCache(),
-    removeTexture: (id: string) => aiTextureService.removeTexture(id),
+    generateTexture: async (options: TextureGenerationOptions) => {
+      const result = await aiTextureService.generateTexture(options);
+      if (result.success && result.texture) {
+        // Store texture in browser storage
+        textureStorage.addTexture(result.texture);
+      }
+      return result;
+    },
+    ...textureStorage,
     generatePromptSuggestions: (prompt: string) => 
       aiTextureService.generatePromptSuggestions(prompt),
-    validatePrompt: (prompt: string) => aiTextureService.validatePrompt(prompt),
-    getStats: () => aiTextureService.getStats()
+    validatePrompt: (prompt: string) => aiTextureService.validatePrompt(prompt)
   };
 }; 
