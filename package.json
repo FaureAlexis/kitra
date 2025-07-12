@@ -23,6 +23,8 @@
     "blockchain:deploy:quick": "hardhat run scripts/deploy-quick.js --network spicy",
     "blockchain:deploy:aggressive": "hardhat run scripts/deploy-aggressive.js --network spicy",
     "blockchain:deploy:nuclear": "hardhat run scripts/deploy-nuclear.js --network spicy",
+    "blockchain:deploy:governor": "hardhat run scripts/deploy-governor.js --network spicy",
+    "blockchain:deploy:governor:aggressive": "hardhat run scripts/deploy-governor-aggressive.js --network spicy",
     "blockchain:diagnostics": "hardhat run scripts/deploy-diagnostics.js --network spicy",
     "blockchain:monitor": "hardhat run scripts/transaction-monitor.js --network spicy",
     "blockchain:test": "hardhat run scripts/verify-deployment.js --network spicy",
