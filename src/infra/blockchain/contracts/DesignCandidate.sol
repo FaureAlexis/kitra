@@ -56,24 +56,24 @@ contract DesignCandidate is
      * @dev Mint a new design candidate NFT
      * @param to Address to mint to
      * @param name Design name
-     * @param tokenURI IPFS URI containing metadata
+     * @param uri IPFS URI containing metadata
      */
     function mintDesign(
         address to,
         string memory name,
-        string memory tokenURI
+        string memory uri
     ) external onlyOwner returns (uint256) {
         uint256 tokenId = _nextTokenId++;
         
         _mint(to, tokenId);
-        _setTokenURI(tokenId, tokenURI);
+        _setTokenURI(tokenId, uri);
         
         designers[tokenId] = to;
         designNames[tokenId] = name;
         mintTimestamps[tokenId] = block.timestamp;
         isCandidate[tokenId] = true;
 
-        emit DesignMinted(tokenId, to, name, tokenURI);
+        emit DesignMinted(tokenId, to, name, uri);
         emit CandidateStatusChanged(tokenId, true);
 
         return tokenId;
@@ -103,7 +103,7 @@ contract DesignCandidate is
         string memory name,
         uint256 mintTime,
         bool candidate,
-        string memory tokenURI
+        string memory uri
     ) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
         

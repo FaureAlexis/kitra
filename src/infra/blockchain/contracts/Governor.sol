@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/governance/Governor.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+
 import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -32,7 +32,6 @@ contract KitraGovernor is
     GovernorCountingSimple,
     GovernorVotes,
     GovernorVotesQuorumFraction,
-    GovernorTimelockControl,
     Ownable
 {
     IDesignCandidate public designCandidate;
@@ -69,7 +68,6 @@ contract KitraGovernor is
 
     constructor(
         IVotes _token,
-        TimelockController _timelock,
         address _designCandidate
     )
         Governor("KitraGovernor")
@@ -80,7 +78,6 @@ contract KitraGovernor is
         )
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(10) // 10% quorum
-        GovernorTimelockControl(_timelock)
         Ownable(msg.sender)
     {
         designCandidate = IDesignCandidate(_designCandidate);
@@ -213,17 +210,12 @@ contract KitraGovernor is
     }
 
     /**
-     * @dev Override execute to handle design approval/rejection
+     * @dev Handle design approval/rejection after execution
+     * Called manually after successful execution
      */
-    function _execute(
-        uint256 proposalId,
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) {
-        super._execute(proposalId, targets, values, calldatas, descriptionHash);
-
+    function handleExecutionResult(uint256 proposalId) external {
+        require(state(proposalId) == ProposalState.Executed, "Proposal not executed");
+        
         // Emit events based on proposal type
         ProposalMetadata memory metadata = proposalMetadata[proposalId];
         
@@ -243,15 +235,15 @@ contract KitraGovernor is
     }
 
     // Override required functions
-    function votingDelay() public view override(IGovernor, GovernorSettings) returns (uint256) {
+    function votingDelay() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.votingDelay();
     }
 
-    function votingPeriod() public view override(IGovernor, GovernorSettings) returns (uint256) {
+    function votingPeriod() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.votingPeriod();
     }
 
-    function quorum(uint256 blockNumber) public view override(IGovernor, GovernorVotesQuorumFraction) returns (uint256) {
+    function quorum(uint256 blockNumber) public view override(Governor, GovernorVotesQuorumFraction) returns (uint256) {
         return super.quorum(blockNumber);
     }
 
@@ -259,22 +251,5 @@ contract KitraGovernor is
         return super.proposalThreshold();
     }
 
-    function _cancel(
-        address[] memory targets,
-        uint256[] memory values,
-        bytes[] memory calldatas,
-        bytes32 descriptionHash
-    ) internal override(Governor, GovernorTimelockControl) returns (uint256) {
-        return super._cancel(targets, values, calldatas, descriptionHash);
-    }
 
-    function _executor() internal view override(Governor, GovernorTimelockControl) returns (address) {
-        return super._executor();
-    }
-
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(Governor, GovernorTimelockControl) returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
 } 
