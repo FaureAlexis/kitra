@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Text } from '@react-three/drei';
 import { useControls } from 'leva';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -167,34 +166,36 @@ export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
         {createMaterial(secondaryColor, 6)}
       </mesh>
       
-      {/* Player Name on back of jersey */}
+      {/* Player Name on back of jersey - Simple geometry approach */}
       {playerName && (
-        <Text
-          position={[0, 0.5, -0.1]}
-          fontSize={fontSize * 0.8}
-          color={flockingColor}
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.02}
-          rotation={[0, Math.PI, 0]}
-        >
-          {playerName.toUpperCase()}
-        </Text>
+        <group position={[0, 0.3, -0.8]} rotation={[0, Math.PI, 0]}>
+          <mesh>
+            <boxGeometry args={[playerName.length * fontSize * 0.4, fontSize * 0.6, 0.02]} />
+            <meshStandardMaterial 
+              color={flockingColor}
+              transparent={true}
+              opacity={1.0}
+              emissive={flockingColor}
+              emissiveIntensity={0.2}
+            />
+          </mesh>
+        </group>
       )}
       
-      {/* Player Number on back of jersey */}
+      {/* Player Number on back of jersey - Simple geometry approach */}
       {playerNumber && (
-        <Text
-          position={[0, -0.2, -0.1]}
-          fontSize={fontSize * 1.5}
-          color={flockingColor}
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.1}
-          rotation={[0, Math.PI, 0]}
-        >
-          {playerNumber}
-        </Text>
+        <group position={[0, -0.4, -0.8]} rotation={[0, Math.PI, 0]}>
+          <mesh>
+            <boxGeometry args={[playerNumber.length * fontSize * 0.8, fontSize * 1.4, 0.02]} />
+            <meshStandardMaterial 
+              color={flockingColor}
+              transparent={true}
+              opacity={1.0}
+              emissive={flockingColor}
+              emissiveIntensity={0.2}
+            />
+          </mesh>
+        </group>
       )}
       
       {/* Texture overlay indicator */}
