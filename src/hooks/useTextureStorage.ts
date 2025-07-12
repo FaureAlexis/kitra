@@ -12,6 +12,12 @@ export interface StoredTexture {
     format: string;
   };
   url?: string; // Object URL for display
+  // IPFS Integration fields
+  ipfsHash?: string; // IPFS hash for permanent storage
+  ipfsUrl?: string; // IPFS gateway URL for sharing
+  designName?: string; // User-provided name for the design
+  designDescription?: string; // User-provided description
+  isUploaded?: boolean; // Whether texture has been uploaded to IPFS
 }
 
 interface TextureStorageHook {
@@ -22,6 +28,10 @@ interface TextureStorageHook {
   clearAll: () => void;
   getTotalSize: () => number;
   cleanup: () => void;
+  // New IPFS-related methods
+  updateTextureIPFS: (id: string, ipfsData: { ipfsHash: string; ipfsUrl: string; designName?: string; designDescription?: string }) => void;
+  getUploadedTextures: () => StoredTexture[];
+  getUnuploadedTextures: () => StoredTexture[];
 }
 
 const STORAGE_KEY = 'kitra_textures';
@@ -190,6 +200,37 @@ export const useTextureStorage = (): TextureStorageHook => {
     };
   }, []);
 
+  // Update texture with IPFS data
+  const updateTextureIPFS = useCallback((id: string, ipfsData: { ipfsHash: string; ipfsUrl: string; designName?: string; designDescription?: string }) => {
+    setTextures(prev => {
+      const newTextures = prev.map(texture => {
+        if (texture.id === id) {
+          return {
+            ...texture,
+            ipfsHash: ipfsData.ipfsHash,
+            ipfsUrl: ipfsData.ipfsUrl,
+            designName: ipfsData.designName,
+            designDescription: ipfsData.designDescription,
+            isUploaded: true
+          };
+        }
+        return texture;
+      });
+      saveToStorage(newTextures);
+      return newTextures;
+    });
+  }, [saveToStorage]);
+
+  // Get textures that have been uploaded to IPFS
+  const getUploadedTextures = useCallback((): StoredTexture[] => {
+    return textures.filter(texture => texture.isUploaded);
+  }, [textures]);
+
+  // Get textures that haven't been uploaded to IPFS yet
+  const getUnuploadedTextures = useCallback((): StoredTexture[] => {
+    return textures.filter(texture => !texture.isUploaded);
+  }, [textures]);
+
   return {
     textures,
     addTexture,
@@ -197,6 +238,9 @@ export const useTextureStorage = (): TextureStorageHook => {
     getTexture,
     clearAll,
     getTotalSize,
-    cleanup
+    cleanup,
+    updateTextureIPFS,
+    getUploadedTextures,
+    getUnuploadedTextures
   };
 }; 

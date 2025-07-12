@@ -18,6 +18,32 @@ export interface TextureGenerationResult {
   error?: string;
 }
 
+export interface SaveDesignToIPFSResult {
+  success: boolean;
+  ipfsHash?: string;
+  ipfsUrl?: string;
+  metadataHash?: string;
+  metadataUrl?: string;
+  error?: string;
+}
+
+export interface SaveDesignRequest {
+  textureId: string;
+  designName: string;
+  designDescription: string;
+  userAddress?: string;
+}
+
+export interface SaveDesignAPIRequest {
+  textureData: string; // base64 encoded
+  designName: string;
+  designDescription: string;
+  prompt: string;
+  style: string;
+  kitType: string;
+  userAddress?: string;
+}
+
 export class AITextureService {
   private static instance: AITextureService;
   private baseUrl: string;
@@ -102,6 +128,105 @@ export class AITextureService {
   }
 
   /**
+   * Save a design to IPFS permanently
+   */
+  async saveDesignToIPFS(apiRequest: SaveDesignAPIRequest): Promise<SaveDesignToIPFSResult> {
+    console.log('🚀 [CLIENT] Starting IPFS save process...');
+    console.log('📋 [CLIENT] API Request data:', {
+      designName: apiRequest.designName,
+      designDescription: apiRequest.designDescription?.substring(0, 100) + '...',
+      prompt: apiRequest.prompt?.substring(0, 100) + '...',
+      style: apiRequest.style,
+      kitType: apiRequest.kitType,
+      userAddress: apiRequest.userAddress,
+      textureDataLength: apiRequest.textureData?.length || 0,
+      textureDataPrefix: apiRequest.textureData?.substring(0, 50) + '...'
+    });
+    
+    try {
+      // Validate input
+      console.log('🔍 [CLIENT] Validating input...');
+      if (!apiRequest.textureData || !apiRequest.designName || !apiRequest.prompt) {
+        console.error('❌ [CLIENT] Missing required fields:', {
+          hasTextureData: !!apiRequest.textureData,
+          hasDesignName: !!apiRequest.designName,
+          hasPrompt: !!apiRequest.prompt
+        });
+        return {
+          success: false,
+          error: 'Texture data, design name, and prompt are required'
+        };
+      }
+      console.log('✅ [CLIENT] Input validation passed');
+
+      console.log('🌐 [CLIENT] Sending request to API...');
+      const response = await fetch(`${this.baseUrl}/designs/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(apiRequest),
+      });
+
+      console.log('📡 [CLIENT] Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      const data = await response.json();
+      console.log('📥 [CLIENT] Response data:', data);
+
+      if (!response.ok) {
+        console.error('❌ [CLIENT] API request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: data.error
+        });
+        return {
+          success: false,
+          error: data.error || `HTTP ${response.status}: ${response.statusText}`
+        };
+      }
+
+      if (!data.success) {
+        console.error('❌ [CLIENT] API returned failure:', data.error);
+        return {
+          success: false,
+          error: data.error || 'Failed to save design to IPFS'
+        };
+      }
+
+      console.log('🎉 [CLIENT] Design saved successfully!', {
+        ipfsHash: data.ipfsHash,
+        ipfsUrl: data.ipfsUrl,
+        metadataHash: data.metadataHash,
+        metadataUrl: data.metadataUrl
+      });
+
+      return {
+        success: true,
+        ipfsHash: data.ipfsHash,
+        ipfsUrl: data.ipfsUrl,
+        metadataHash: data.metadataHash,
+        metadataUrl: data.metadataUrl
+      };
+
+    } catch (error) {
+      console.error('💥 [CLIENT] Critical error occurred:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
    * Generate unique texture ID
    */
   private generateTextureId(): string {
@@ -169,6 +294,75 @@ export const useAITexture = () => {
         // Store texture in browser storage
         textureStorage.addTexture(result.texture);
       }
+      return result;
+    },
+    saveDesignToIPFS: async (request: SaveDesignRequest) => {
+      console.log('🚀 [HOOK] Starting save design to IPFS...');
+      console.log('📋 [HOOK] Request data:', {
+        textureId: request.textureId,
+        designName: request.designName,
+        designDescription: request.designDescription?.substring(0, 100) + '...',
+        userAddress: request.userAddress
+      });
+      
+      // Get the texture data from storage
+      console.log('🔍 [HOOK] Retrieving texture from storage...');
+      const texture = textureStorage.getTexture(request.textureId);
+      console.log('📦 [HOOK] Texture retrieval result:', {
+        found: !!texture,
+        textureId: request.textureId,
+        availableTextures: textureStorage.textures.length,
+        availableTextureIds: textureStorage.textures.map(t => t.id)
+      });
+      
+      if (!texture) {
+        console.error('❌ [HOOK] Texture not found in storage');
+        return {
+          success: false,
+          error: 'Texture not found in storage'
+        };
+      }
+      
+      console.log('✅ [HOOK] Texture found:', {
+        id: texture.id,
+        prompt: texture.metadata.prompt?.substring(0, 100) + '...',
+        style: texture.metadata.style,
+        kitType: texture.metadata.kitType,
+        textureDataLength: texture.textureData?.length || 0,
+        hasIPFSData: !!texture.ipfsHash
+      });
+
+      // Construct API request with texture data
+      console.log('🔧 [HOOK] Constructing API request...');
+      const apiRequest: SaveDesignAPIRequest = {
+        textureData: texture.textureData,
+        designName: request.designName,
+        designDescription: request.designDescription,
+        prompt: texture.metadata.prompt,
+        style: texture.metadata.style,
+        kitType: texture.metadata.kitType,
+        userAddress: request.userAddress
+      };
+      console.log('✅ [HOOK] API request constructed');
+
+      console.log('🌐 [HOOK] Calling service...');
+      const result = await aiTextureService.saveDesignToIPFS(apiRequest);
+      console.log('📥 [HOOK] Service result:', result);
+      
+      if (result.success) {
+        console.log('🎉 [HOOK] Save successful, updating texture with IPFS data...');
+        // Update the texture with IPFS data
+        textureStorage.updateTextureIPFS(request.textureId, {
+          ipfsHash: result.ipfsHash!,
+          ipfsUrl: result.ipfsUrl!,
+          designName: request.designName,
+          designDescription: request.designDescription
+        });
+        console.log('✅ [HOOK] Texture updated with IPFS data');
+      } else {
+        console.error('❌ [HOOK] Save failed:', result.error);
+      }
+      
       return result;
     },
     ...textureStorage,
