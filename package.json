@@ -6,7 +6,22 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "ci:lint": "next lint --max-warnings 0",
+    "ci:test": "vitest run",
+    "ci:e2e": "playwright test --reporter=dot",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "deploy": "vercel --prod",
+    "blockchain:compile": "hardhat compile",
+    "blockchain:deploy": "hardhat run scripts/deploy.ts --network spicy",
+    "blockchain:verify": "hardhat verify --network spicy",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -15,26 +30,61 @@
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@react-three/drei": "^10.5.0",
+    "@react-three/fiber": "^9.2.0",
+    "@reown/appkit": "^1.7.13",
+    "@reown/appkit-adapter-wagmi": "^1.7.13",
+    "@tanstack/react-query": "^5.83.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "ethers": "^6.13.4",
+    "leva": "^0.10.0",
     "lucide-react": "^0.525.0",
+    "mastra": "^0.10.12",
     "next": "15.3.5",
     "next-themes": "^0.4.6",
+    "openai": "^5.9.0",
+    "pinata": "^2.4.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "siwe": "^2.3.2",
     "sonner": "^2.0.6",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "three": "^0.178.0",
+    "viem": "^2.31.7",
+    "wagmi": "^2.15.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@openzeppelin/contracts": "^5.1.0",
+    "@playwright/test": "^1.48.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.170.0",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "@vitest/ui": "^2.1.8",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "eslint-plugin-testing-library": "^7.0.0",
+    "hardhat": "^2.22.18",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.8"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
