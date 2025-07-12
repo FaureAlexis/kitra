@@ -44,6 +44,21 @@ async function main() {
   }
   console.log("✅ DesignCandidate contract found");
   
+  // Check CHZ Token
+  const chzTokenAddress = process.env.CHZ_TOKEN_ADDRESS;
+  if (!chzTokenAddress) {
+    console.error("❌ CHZ_TOKEN_ADDRESS not found in environment");
+    console.log("Set CHZ_TOKEN_ADDRESS in .env file");
+    process.exit(1);
+  }
+  
+  const tokenCode = await provider.getCode(chzTokenAddress);
+  if (tokenCode === "0x") {
+    console.error("❌ CHZ token contract not found at:", chzTokenAddress);
+    process.exit(1);
+  }
+  console.log("✅ CHZ token contract found");
+  
   // Calculate cost
   const governorGasEstimate = 4000000;
   const deploymentCost = BigInt(governorGasEstimate) * competitiveGasPrice;
@@ -61,12 +76,11 @@ async function main() {
   console.log("-".repeat(40));
   
   const KitraGovernor = await ethers.getContractFactory("KitraGovernor");
-  const mockTokenAddress = deployer.address; // Using deployer as mock voting token
   
-  console.log("Using mock voting token:", mockTokenAddress);
+  console.log("Using CHZ Token:", chzTokenAddress);
   
   const governor = await KitraGovernor.deploy(
-    mockTokenAddress,
+    chzTokenAddress,
     designCandidateAddress,
     {
       gasLimit: governorGasEstimate,
@@ -152,12 +166,12 @@ async function main() {
   console.log("\n=== AGGRESSIVE DEPLOYMENT SUMMARY ===");
   console.log("DesignCandidate:", designCandidateAddress);
   console.log("KitraGovernor:", governorAddress);
-  console.log("Voting Token:", mockTokenAddress);
+  console.log("CHZ Token:", chzTokenAddress);
   console.log("Explorer:", `https://testnet.chiliscan.com/address/${governorAddress}`);
   
   console.log("\n🔧 Add to .env file:");
-  console.log(`GOVERNOR_ADDRESS=${governorAddress}`);
-  console.log(`NEXT_PUBLIC_GOVERNOR_ADDRESS=${governorAddress}`);
+  console.log(`KITRA_GOVERNOR_ADDRESS=${governorAddress}`);
+  console.log(`NEXT_PUBLIC_KITRA_GOVERNOR_ADDRESS=${governorAddress}`);
   
   return governorAddress;
 }

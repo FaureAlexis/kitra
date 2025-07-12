@@ -90,22 +90,34 @@ async function main() {
   
   const KitraGovernor = await ethers.getContractFactory("KitraGovernor");
   
-  // For testing, we'll use the deployer address as the voting token
-  // In production, this should be a proper ERC20Votes token
-  const mockTokenAddress = deployer.address;
+  // Get CHZ token address from environment
+  const chzTokenAddress = process.env.CHZ_TOKEN_ADDRESS;
+  if (!chzTokenAddress) {
+    console.error("❌ CHZ_TOKEN_ADDRESS not found in environment");
+    console.log("Set CHZ_TOKEN_ADDRESS in .env file");
+    process.exit(1);
+  }
   
-  console.log("Using mock voting token:", mockTokenAddress);
-  console.log("💡 In production, replace with real ERC20Votes token");
+  console.log("Using CHZ Token:", chzTokenAddress);
+  
+  // Verify CHZ token exists
+  const tokenCode = await provider.getCode(chzTokenAddress);
+  if (tokenCode === "0x") {
+    console.error("❌ CHZ token contract not found at:", chzTokenAddress);
+    console.log("💡 Make sure CHZ_TOKEN_ADDRESS is correct");
+    process.exit(1);
+  }
+  console.log("✅ CHZ token contract verified");
   
   try {
-    const governor = await KitraGovernor.deploy(
-      mockTokenAddress, // IVotes token - using deployer for testing
-      designCandidateAddress, // DesignCandidate contract
-      {
-        gasLimit: governorGasEstimate,
-        gasPrice: safeGasPrice,
-      }
-    );
+          const governor = await KitraGovernor.deploy(
+        chzTokenAddress, // IVotes token - CHZ Token
+        designCandidateAddress, // DesignCandidate contract
+        {
+          gasLimit: governorGasEstimate,
+          gasPrice: safeGasPrice,
+        }
+      );
     
     console.log("📋 Transaction hash:", governor.deploymentTransaction().hash);
     console.log("⏳ Waiting for deployment confirmation...");
@@ -190,14 +202,14 @@ async function main() {
     console.log("Deployer:", deployer.address);
     console.log("DesignCandidate:", designCandidateAddress);
     console.log("KitraGovernor:", governorAddress);
-    console.log("Voting Token:", mockTokenAddress);
+    console.log("CHZ Token:", chzTokenAddress);
     console.log("Block number:", await provider.getBlockNumber());
     
     console.log("\n🔧 ENVIRONMENT VARIABLES");
     console.log("-".repeat(40));
     console.log("Add to your .env file:");
-    console.log(`GOVERNOR_ADDRESS=${governorAddress}`);
-    console.log(`NEXT_PUBLIC_GOVERNOR_ADDRESS=${governorAddress}`);
+    console.log(`KITRA_GOVERNOR_ADDRESS=${governorAddress}`);
+    console.log(`NEXT_PUBLIC_KITRA_GOVERNOR_ADDRESS=${governorAddress}`);
     
     console.log("\n🎯 NEXT STEPS");
     console.log("-".repeat(40));
@@ -205,7 +217,7 @@ async function main() {
     console.log("2. ✅ Permissions configured");
     console.log("3. ⏳ Update frontend with Governor address");
     console.log("4. ⏳ Test proposal creation and voting");
-    console.log("5. ⏳ Deploy real ERC20Votes token (production)");
+    console.log("5. ⏳ Users need CHZ tokens to vote on proposals");
     
     console.log("\n🔗 CONTRACT ADDRESSES");
     console.log("-".repeat(40));
