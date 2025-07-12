@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAccount, useDisconnect, useEnsName } from "wagmi";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,9 +31,7 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">K</span>
-            </div>
+            <Logo width={32} color="black" />
             <span className="text-xl font-bold">Kitra</span>
           </Link>
 
@@ -184,4 +183,4 @@ export function Navbar() {
       </div>
     </nav>
   );
-} 
+}
