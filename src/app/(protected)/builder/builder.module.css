@@ -18,6 +18,14 @@
   height: 100%;
   z-index: 1;
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f8fafc 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background 0.5s ease;
+}
+
+.canvasWrapper.withBackgroundImage {
+  background-blend-mode: multiply;
 }
 
 /* Glass Panel Base Styles */
@@ -93,7 +101,7 @@
 /* Control Panels */
 .controlsWrapper {
   position: fixed;
-  top: 100px;
+  top: 80px;
   right: 20px;
   z-index: 100;
   display: flex;
@@ -110,7 +118,7 @@
 /* Left Controls Panel (Color Controls) */
 .leftControlsWrapper {
   position: fixed;
-  top: 100px;
+  top: 80px;
   left: 20px;
   z-index: 100;
   display: flex;
@@ -569,15 +577,22 @@
 }
 
 .glassButton.primary {
-  background: rgba(236, 72, 153, 0.2);
-  border-color: rgba(236, 72, 153, 0.4);
+  background: #ec4899;
+  border-color: #ec4899;
   color: #fff;
 }
 
 .glassButton.primary:hover:not(:disabled) {
-  background: rgba(236, 72, 153, 0.3);
-  border-color: rgba(236, 72, 153, 0.5);
-  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+  background: #ec4899;
+  border-color: #ec4899;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 
+    0 8px 24px rgba(236, 72, 153, 0.3),
+    0 0 0 1px rgba(236, 72, 153, 0.2);
+}
+
+.glassButton.primary:hover:not(:disabled) > svg {
+  transform: translateY(-1px) scale(1.02);
 }
 
 /* Button Sizes */
