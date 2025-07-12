@@ -56,6 +56,12 @@ export function Navbar() {
             >
               Gallery
             </Link>
+            <Link
+              href="/my-designs"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              My Designs
+            </Link>
           </div>
 
           {/* Wallet Connection */}
@@ -87,6 +93,9 @@ export function Navbar() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/my-designs">My Designs</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/builder">Create Design</Link>
@@ -161,6 +170,13 @@ export function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Gallery
+              </Link>
+              <Link
+                href="/my-designs"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                My Designs
               </Link>
             </div>
           </div>
