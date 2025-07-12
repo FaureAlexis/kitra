@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
-import { Scene } from '../3d/Scene';
-import { SafeCanvas } from '../3d/SafeCanvas';
+import React, { Suspense, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { HudHeader } from '../ui/HudHeader';
 import { ToggleButton } from '../ui/ToggleButton';
 import { ColorControlsPanel } from '../ui/ColorControlsPanel';
-import { FlockingControlsPanel } from '../ui/FlockingControlsPanel';
 import { AIAssistantPanel } from '../ui/AIAssistantPanel';
 import { ActionsBar } from '../ui/ActionsBar';
 import { LevaControls } from '../ui/LevaControls';
+import { SafeCanvas } from '../3d/SafeCanvas';
+import { Scene } from '../3d/Scene';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useModelLoader } from '../hooks/useModelLoader';
+import { useDesignLoader } from '../../../../../hooks/useDesignLoader';
+import { useTextureStorage } from '../../../../../hooks/useTextureStorage';
 import styles from '../../builder.module.css';
 
 interface BuilderLayoutProps {
@@ -21,23 +24,26 @@ interface BuilderLayoutProps {
 export const BuilderLayout = React.memo(function BuilderLayout({ 
   modelPath 
 }: BuilderLayoutProps) {
+  const searchParams = useSearchParams();
+  const loadDesignId = searchParams.get('load');
+  
   const [showControls, setShowControls] = useState(true);
   const [showLeva, setShowLeva] = useState(false);
   const [primaryColor, setPrimaryColor] = useState('#ec4899');
   const [secondaryColor, setSecondaryColor] = useState('#ffffff');
   const [pattern, setPattern] = useState('solid');
   
-  // Flocking state
-  const [playerName, setPlayerName] = useState('');
-  const [playerNumber, setPlayerNumber] = useState('');
-  const [flockingColor, setFlockingColor] = useState('#ffffff');
-  const [fontSize, setFontSize] = useState(0.4);
-  
   // AI Texture state
   const [currentTextureUrl, setCurrentTextureUrl] = useState<string | null>(null);
   const [currentTextureId, setCurrentTextureId] = useState<string | null>(null);
   
+  // Design loading state
+  const [isLoadingDesign, setIsLoadingDesign] = useState(false);
+  
   // Custom hooks
+  const designLoader = useDesignLoader();
+  const textureStorage = useTextureStorage();
+  
   useKeyboardShortcuts({
     onToggleControls: () => setShowControls(prev => !prev),
     onToggleLeva: () => setShowLeva(prev => !prev)
@@ -45,13 +51,68 @@ export const BuilderLayout = React.memo(function BuilderLayout({
   
   useModelLoader({ modelPath });
 
+  // Load design on mount if load parameter is present
+  useEffect(() => {
+    if (loadDesignId && !designLoader.design && !designLoader.loading) {
+      console.log('🔄 [BuilderLayout] Loading design from URL parameter:', loadDesignId);
+      setIsLoadingDesign(true);
+      
+      designLoader.loadDesign(loadDesignId).then((success) => {
+        if (success && designLoader.design) {
+          console.log('✅ [BuilderLayout] Design loaded, applying to builder...');
+          
+          // Apply the loaded design to the builder
+          const storedTexture = designLoader.applyToBuilder();
+          if (storedTexture) {
+            // Add texture to storage
+            textureStorage.addTexture(storedTexture);
+            
+            // Set as current texture
+            setCurrentTextureId(storedTexture.id);
+            setCurrentTextureUrl(storedTexture.url || null);
+            
+            // Show success notification
+            toast.success('Design loaded successfully!', {
+              description: `Loaded "${designLoader.design.name}" into the builder`,
+              duration: 4000
+            });
+            
+            console.log('🎨 [BuilderLayout] Design applied successfully:', {
+              textureId: storedTexture.id,
+              designName: designLoader.design.name
+            });
+          }
+        } else {
+          console.error('❌ [BuilderLayout] Failed to load design');
+          toast.error('Failed to load design', {
+            description: designLoader.error || 'The design could not be loaded',
+            duration: 5000
+          });
+        }
+        setIsLoadingDesign(false);
+      });
+    }
+  }, [loadDesignId, designLoader, textureStorage]);
+
+  // Clean up loaded design when component unmounts or when navigating away
+  useEffect(() => {
+    return () => {
+      if (designLoader.design) {
+        console.log('🧹 [BuilderLayout] Cleaning up loaded design');
+        designLoader.clearDesign();
+      }
+    };
+  }, [designLoader]);
+
   // Texture generation callbacks
   const handleTextureGenerated = (textureUrl: string, textureId: string) => {
+    console.log('🎨 [BuilderLayout] New texture generated:', textureId);
     setCurrentTextureUrl(textureUrl);
     setCurrentTextureId(textureId);
   };
 
   const handleApplyTexture = (textureId: string) => {
+    console.log('🎨 [BuilderLayout] Applying texture:', textureId);
     // This will trigger texture application in the Scene component
     setCurrentTextureId(textureId);
   };
@@ -73,14 +134,20 @@ export const BuilderLayout = React.memo(function BuilderLayout({
               pattern={pattern}
               textureUrl={currentTextureUrl}
               textureId={currentTextureId}
-              playerName={playerName}
-              playerNumber={playerNumber}
-              flockingColor={flockingColor}
-              fontSize={fontSize}
             />
           </SafeCanvas>
         </Suspense>
       </div>
+
+      {/* Design Loading Overlay */}
+      {isLoadingDesign && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingSpinner}></div>
+          <p className="text-black/70 mt-4 font-medium">
+            Loading design "{loadDesignId}"...
+          </p>
+        </div>
+      )}
 
       {/* HUD Header */}
       <HudHeader />
@@ -91,7 +158,7 @@ export const BuilderLayout = React.memo(function BuilderLayout({
         onToggle={() => setShowControls(!showControls)}
       />
 
-      {/* Left Controls Panel - Color Controls & Flocking */}
+      {/* Color Controls Panel - Left Side */}
       {showControls && (
         <div className={styles.leftControlsWrapper}>
           <ColorControlsPanel
@@ -102,17 +169,6 @@ export const BuilderLayout = React.memo(function BuilderLayout({
             onSecondaryColorChange={setSecondaryColor}
             onPatternChange={setPattern}
           />
-          
-          <FlockingControlsPanel
-            playerName={playerName}
-            playerNumber={playerNumber}
-            flockingColor={flockingColor}
-            fontSize={fontSize}
-            onPlayerNameChange={setPlayerName}
-            onPlayerNumberChange={setPlayerNumber}
-            onFlockingColorChange={setFlockingColor}
-            onFontSizeChange={setFontSize}
-          />
         </div>
       )}
 
@@ -120,10 +176,11 @@ export const BuilderLayout = React.memo(function BuilderLayout({
       <AIAssistantPanel 
         onTextureGenerated={handleTextureGenerated}
         onApplyTexture={handleApplyTexture}
+        loadedDesign={designLoader.design} // Pass loaded design to prefill AI panel
       />
 
       {/* Actions Bar */}
-      <ActionsBar />
+      <ActionsBar currentTextureId={currentTextureId} />
 
       {/* Leva Controls */}
       <LevaControls showLeva={showLeva} />

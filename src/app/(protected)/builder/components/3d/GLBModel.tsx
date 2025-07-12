@@ -15,10 +15,6 @@ interface GLBModelProps {
   pattern?: string;
   textureUrl?: string | null;
   textureId?: string | null;
-  playerName?: string;
-  playerNumber?: string;
-  flockingColor?: string;
-  fontSize?: number;
 }
 
 export const GLBModel = React.memo(function GLBModel({ 
@@ -27,11 +23,7 @@ export const GLBModel = React.memo(function GLBModel({
   secondaryColor: propSecondaryColor,
   pattern: propPattern,
   textureUrl,
-  textureId,
-  playerName = '',
-  playerNumber = '',
-  flockingColor = '#ffffff',
-  fontSize = 0.4
+  textureId
 }: GLBModelProps) {
   const meshRef = useRef<THREE.Group>(null);
   const hasLoadedRef = useRef(false);
@@ -113,7 +105,7 @@ export const GLBModel = React.memo(function GLBModel({
             console.error('Failed to load texture:', error);
           });
       }
-    } else {
+    } else if (gltf?.scene) {
       // Remove texture and restore original materials
       console.log('GLB removing texture from materials');
       gltf.scene.traverse((child) => {
@@ -173,38 +165,6 @@ export const GLBModel = React.memo(function GLBModel({
   return (
     <group ref={meshRef}>
       <primitive object={gltf.scene} />
-      
-      {/* Player Name on back of jersey - Simple geometry approach */}
-      {playerName && (
-        <group position={[0, 0.3, -0.8]} rotation={[0, Math.PI, 0]}>
-          <mesh>
-            <boxGeometry args={[playerName.length * fontSize * 0.4, fontSize * 0.6, 0.02]} />
-            <meshStandardMaterial 
-              color={flockingColor}
-              transparent={true}
-              opacity={1.0}
-              emissive={flockingColor}
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-        </group>
-      )}
-      
-      {/* Player Number on back of jersey - Simple geometry approach */}
-      {playerNumber && (
-        <group position={[0, -0.4, -0.8]} rotation={[0, Math.PI, 0]}>
-          <mesh>
-            <boxGeometry args={[playerNumber.length * fontSize * 0.8, fontSize * 1.4, 0.02]} />
-            <meshStandardMaterial 
-              color={flockingColor}
-              transparent={true}
-              opacity={1.0}
-              emissive={flockingColor}
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-        </group>
-      )}
       
       {/* Texture overlay indicator */}
       {shouldUseTexture && appliedTexture && (

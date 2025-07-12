@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAITexture } from '../../../../../lib/services/ai-texture.service';
 import { GlassButton } from './GlassButton';
@@ -8,15 +8,18 @@ import { GlassDropdown } from './GlassDropdown';
 import { GlassTextarea } from './GlassTextarea';
 import { GlassInput } from './GlassInput';
 import type { TextureGenerationOptions } from '../../../../../lib/services/ai-texture.service';
+import type { DesignDetails } from '../../../../api/designs/[id]/route';
 
 interface AIAssistantPanelProps {
   onTextureGenerated?: (textureUrl: string, textureId: string) => void;
   onApplyTexture?: (textureId: string) => void;
+  loadedDesign?: DesignDetails | null;
 }
 
 export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAssistantPanel({ 
   onTextureGenerated,
-  onApplyTexture
+  onApplyTexture,
+  loadedDesign
 }) {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -35,6 +38,26 @@ export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAss
     generatePromptSuggestions,
     validatePrompt
   } = useAITexture();
+
+  // Effect to prefill form when a design is loaded
+  useEffect(() => {
+    if (loadedDesign) {
+      console.log('🎨 [AIAssistantPanel] Prefilling form with loaded design:', loadedDesign.name);
+      setPrompt(loadedDesign.prompt || '');
+      setStyle(loadedDesign.style as TextureGenerationOptions['style'] || 'modern');
+      setKitType(loadedDesign.kitType as TextureGenerationOptions['kitType'] || 'home');
+      
+      // Show advanced panel if design has specific properties
+      if (loadedDesign.style !== 'modern' || loadedDesign.kitType !== 'home') {
+        setShowAdvanced(true);
+      }
+      
+      toast.info('Design loaded!', {
+        description: `Loaded settings from "${loadedDesign.name}"`,
+        duration: 3000
+      });
+    }
+  }, [loadedDesign]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,7 +150,14 @@ export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAss
     }}>
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">AI Assistant</h3>
+          <div>
+            <h3 className="text-lg font-semibold text-white">AI Assistant</h3>
+            {loadedDesign && (
+              <p className="text-xs text-pink-300 mt-1">
+                Loaded: {loadedDesign.name}
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
             <GlassButton
               size="sm"
@@ -215,14 +245,19 @@ export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAss
           <div>
             <label className="block text-sm font-medium text-white mb-2">
               Describe your kit design
+              {loadedDesign && (
+                <span className="text-xs text-pink-300 ml-2">
+                  (from loaded design)
+                </span>
+              )}
             </label>
-                         <GlassTextarea
-               value={prompt}
-               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
-               placeholder="e.g., Modern football kit with geometric patterns and lightning bolts"
-               className="h-20"
-               disabled={isGenerating}
-             />
+            <GlassTextarea
+              value={prompt}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
+              placeholder="e.g., Modern football kit with geometric patterns and lightning bolts"
+              className="h-20"
+              disabled={isGenerating}
+            />
           </div>
 
           <div className="flex gap-2">
@@ -242,44 +277,44 @@ export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAss
                 <label className="block text-sm font-medium text-white mb-1">
                   Style
                 </label>
-                                 <GlassDropdown
-                   value={style || 'modern'}
-                   onChange={(value: string) => setStyle(value as TextureGenerationOptions['style'])}
-                   options={[
-                     { value: 'modern', label: 'Modern' },
-                     { value: 'photorealistic', label: 'Photorealistic' },
-                     { value: 'artistic', label: 'Artistic' },
-                     { value: 'minimalist', label: 'Minimalist' },
-                     { value: 'vintage', label: 'Vintage' }
-                   ]}
-                 />
+                <GlassDropdown
+                  value={style || 'modern'}
+                  onChange={(value: string) => setStyle(value as TextureGenerationOptions['style'])}
+                  options={[
+                    { value: 'modern', label: 'Modern' },
+                    { value: 'photorealistic', label: 'Photorealistic' },
+                    { value: 'artistic', label: 'Artistic' },
+                    { value: 'minimalist', label: 'Minimalist' },
+                    { value: 'vintage', label: 'Vintage' }
+                  ]}
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-white mb-1">
                   Kit Type
                 </label>
-                                 <GlassDropdown
-                   value={kitType || 'home'}
-                   onChange={(value: string) => setKitType(value as TextureGenerationOptions['kitType'])}
-                   options={[
-                     { value: 'home', label: 'Home' },
-                     { value: 'away', label: 'Away' },
-                     { value: 'third', label: 'Third' },
-                     { value: 'goalkeeper', label: 'Goalkeeper' }
-                   ]}
-                 />
+                <GlassDropdown
+                  value={kitType || 'home'}
+                  onChange={(value: string) => setKitType(value as TextureGenerationOptions['kitType'])}
+                  options={[
+                    { value: 'home', label: 'Home' },
+                    { value: 'away', label: 'Away' },
+                    { value: 'third', label: 'Third' },
+                    { value: 'goalkeeper', label: 'Goalkeeper' }
+                  ]}
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-white mb-1">
                   Team Name (Optional)
                 </label>
-                                 <GlassInput
-                   value={teamName}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value)}
-                   placeholder="e.g., Real Madrid"
-                 />
+                <GlassInput
+                  value={teamName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value)}
+                  placeholder="e.g., Real Madrid"
+                />
               </div>
             </div>
           )}

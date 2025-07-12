@@ -12,10 +12,6 @@ interface ModelProps {
   pattern?: string;
   textureUrl?: string | null;
   textureId?: string | null;
-  playerName?: string;
-  playerNumber?: string;
-  flockingColor?: string;
-  fontSize?: number;
 }
 
 export const Model = React.memo(function Model({ 
@@ -24,11 +20,7 @@ export const Model = React.memo(function Model({
   secondaryColor,
   pattern,
   textureUrl,
-  textureId,
-  playerName,
-  playerNumber,
-  flockingColor,
-  fontSize
+  textureId
 }: ModelProps) {
   const [useBasicModel, setUseBasicModel] = React.useState(false);
   const hasCheckedRef = useRef(false);
@@ -62,10 +54,6 @@ export const Model = React.memo(function Model({
         pattern={pattern}
         textureUrl={textureUrl}
         textureId={textureId}
-        playerName={playerName}
-        playerNumber={playerNumber}
-        flockingColor={flockingColor}
-        fontSize={fontSize}
       />
     );
   }
@@ -78,10 +66,6 @@ export const Model = React.memo(function Model({
         pattern={pattern}
         textureUrl={textureUrl}
         textureId={textureId}
-        playerName={playerName}
-        playerNumber={playerNumber}
-        flockingColor={flockingColor}
-        fontSize={fontSize}
       />
     }>
       <ErrorBoundary fallback={
@@ -91,10 +75,6 @@ export const Model = React.memo(function Model({
           pattern={pattern}
           textureUrl={textureUrl}
           textureId={textureId}
-          playerName={playerName}
-          playerNumber={playerNumber}
-          flockingColor={flockingColor}
-          fontSize={fontSize}
         />
       }>
         <GLBModel 
@@ -104,10 +84,6 @@ export const Model = React.memo(function Model({
           pattern={pattern}
           textureUrl={textureUrl}
           textureId={textureId}
-          playerName={playerName}
-          playerNumber={playerNumber}
-          flockingColor={flockingColor}
-          fontSize={fontSize}
         />
       </ErrorBoundary>
     </Suspense>

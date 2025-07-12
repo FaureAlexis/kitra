@@ -13,10 +13,6 @@ interface BasicModelProps {
   pattern?: string;
   textureUrl?: string | null;
   textureId?: string | null;
-  playerName?: string;
-  playerNumber?: string;
-  flockingColor?: string;
-  fontSize?: number;
 }
 
 export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
@@ -24,11 +20,7 @@ export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
   secondaryColor: propSecondaryColor,
   pattern: propPattern,
   textureUrl,
-  textureId,
-  playerName = '',
-  playerNumber = '',
-  flockingColor = '#ffffff',
-  fontSize = 0.4
+  textureId
 }) {
   const meshRef = useRef<THREE.Group>(null);
   const materialRefs = useRef<THREE.MeshStandardMaterial[]>([]);
@@ -165,38 +157,6 @@ export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
         <boxGeometry args={[0.6, 0.8, 0.01]} />
         {createMaterial(secondaryColor, 6)}
       </mesh>
-      
-      {/* Player Name on back of jersey - Simple geometry approach */}
-      {playerName && (
-        <group position={[0, 0.3, -0.8]} rotation={[0, Math.PI, 0]}>
-          <mesh>
-            <boxGeometry args={[playerName.length * fontSize * 0.4, fontSize * 0.6, 0.02]} />
-            <meshStandardMaterial 
-              color={flockingColor}
-              transparent={true}
-              opacity={1.0}
-              emissive={flockingColor}
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-        </group>
-      )}
-      
-      {/* Player Number on back of jersey - Simple geometry approach */}
-      {playerNumber && (
-        <group position={[0, -0.4, -0.8]} rotation={[0, Math.PI, 0]}>
-          <mesh>
-            <boxGeometry args={[playerNumber.length * fontSize * 0.8, fontSize * 1.4, 0.02]} />
-            <meshStandardMaterial 
-              color={flockingColor}
-              transparent={true}
-              opacity={1.0}
-              emissive={flockingColor}
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-        </group>
-      )}
       
       {/* Texture overlay indicator */}
       {shouldUseTexture && appliedTexture && (

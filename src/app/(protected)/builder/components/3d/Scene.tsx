@@ -11,10 +11,6 @@ interface SceneProps {
   pattern?: string;
   textureUrl?: string | null;
   textureId?: string | null;
-  playerName?: string;
-  playerNumber?: string;
-  flockingColor?: string;
-  fontSize?: number;
 }
 
 export const Scene = React.memo(function Scene({ 
@@ -23,11 +19,7 @@ export const Scene = React.memo(function Scene({
   secondaryColor,
   pattern,
   textureUrl,
-  textureId,
-  playerName,
-  playerNumber,
-  flockingColor,
-  fontSize
+  textureId
 }: SceneProps) {
   return (
     <>
@@ -97,10 +89,6 @@ export const Scene = React.memo(function Scene({
         pattern={pattern}
         textureUrl={textureUrl}
         textureId={textureId}
-        playerName={playerName}
-        playerNumber={playerNumber}
-        flockingColor={flockingColor}
-        fontSize={fontSize}
       />
       <OrbitControls 
         enablePan={false} 

@@ -249,7 +249,6 @@
 .actionButton:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
   box-shadow: 
     0 8px 24px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(0, 0, 0, 0.05);
@@ -267,7 +266,6 @@
   box-shadow: 
     0 8px 24px rgba(236, 72, 153, 0.3),
     0 0 0 1px rgba(236, 72, 153, 0.2);
-  transform: translateY(-2px);
 }
 
 /* Toggle Button for Panels */
@@ -422,14 +420,12 @@
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.2);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
 }
 
 .glassSelect:focus {
   background: rgba(255, 255, 255, 1);
   border-color: rgba(236, 72, 153, 0.4);
   box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
-  transform: translateY(-1px);
 }
 
 .glassSelect option {
@@ -477,19 +473,52 @@
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.2);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
 }
 
 .glassTextarea:focus {
   background: rgba(255, 255, 255, 1);
   border-color: rgba(236, 72, 153, 0.4);
   box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
-  transform: translateY(-1px);
 }
 
 .glassTextarea::placeholder {
   color: rgba(0, 0, 0, 0.5);
   font-style: italic;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modalContent {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 
+    0 20px 80px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 10000;
+  position: relative;
 }
 
 /* Glass Button Styles */
@@ -517,7 +546,6 @@
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.2);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
 }
 
 .glassButton:active:not(:disabled) {
@@ -541,7 +569,6 @@
   background: rgba(236, 72, 153, 0.3);
   border-color: rgba(236, 72, 153, 0.5);
   box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
-  transform: translateY(-1px);
 }
 
 /* Button Sizes */
@@ -610,7 +637,6 @@
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 0, 0, 0.2);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
 }
 
 /* Upload Area */
@@ -755,4 +781,67 @@
 /* Dark mode color adjustments */
 @media (prefers-color-scheme: light) {
   /* Light mode is now the default, no overrides needed */
+} 
+
+/* Glass Form Elements */
+.glassInput {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.9);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.glassInput:focus {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(236, 72, 153, 0.5);
+  box-shadow: 
+    0 0 0 3px rgba(236, 72, 153, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.glassInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.glassInput::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.glassTextarea {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.9);
+  transition: all 0.2s ease;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.glassTextarea:focus {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(236, 72, 153, 0.5);
+  box-shadow: 
+    0 0 0 3px rgba(236, 72, 153, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.glassTextarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.glassTextarea::placeholder {
+  color: rgba(0, 0, 0, 0.5);
 } 
