@@ -289,11 +289,60 @@ export const useAITexture = () => {
   
   return {
     generateTexture: async (options: TextureGenerationOptions) => {
+      console.log('🎯 [AI_SERVICE] Starting generateTexture...', {
+        prompt: options.prompt.substring(0, 50) + '...',
+        style: options.style,
+        kitType: options.kitType
+      });
       const result = await aiTextureService.generateTexture(options);
+      console.log('🎯 [AI_SERVICE] Service returned result:', {
+        success: result.success,
+        hasTexture: !!result.texture,
+        textureId: result.texture?.id,
+        hasUrl: !!result.texture?.url,
+        error: result.error
+      });
+      
       if (result.success && result.texture) {
-        // Store texture in browser storage
+        console.log('🎯 [AI_SERVICE] Adding texture to storage...');
+        
+        // Create Object URL immediately for the modal (before storage)
+        const createObjectURL = (base64Data: string): string => {
+          try {
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'image/png' });
+            return URL.createObjectURL(blob);
+          } catch (error) {
+            console.error('Failed to create object URL:', error);
+            return '';
+          }
+        };
+        
+        // Add Object URL to texture for immediate modal display
+        result.texture.url = createObjectURL(result.texture.textureData);
+        console.log('🎯 [AI_SERVICE] Created Object URL for modal:', {
+          textureId: result.texture.id,
+          hasUrl: !!result.texture.url
+        });
+        
+        // Store texture in browser storage (may be evicted if storage is full)
         textureStorage.addTexture(result.texture);
+        
+        console.log('🎯 [AI_SERVICE] Texture added to storage');
       }
+      
+      console.log('🎯 [AI_SERVICE] Final result being returned:', {
+        success: result.success,
+        hasTexture: !!result.texture,
+        hasUrl: !!result.texture?.url,
+        textureId: result.texture?.id
+      });
+      
       return result;
     },
     saveDesignToIPFS: async (request: SaveDesignRequest) => {
