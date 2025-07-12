@@ -3,7 +3,8 @@
 import React, { Suspense, useState } from 'react';
 import { HudHeader } from '../ui/HudHeader';
 import { ToggleButton } from '../ui/ToggleButton';
-import { ControlsPanels } from './ControlsPanels';
+import { ColorControlsPanel } from '../ui/ColorControlsPanel';
+import { AIAssistantPanel } from '../ui/AIAssistantPanel';
 import { ActionsBar } from '../ui/ActionsBar';
 import { LevaControls } from '../ui/LevaControls';
 import { SafeCanvas } from '../3d/SafeCanvas';
@@ -79,15 +80,22 @@ export const BuilderLayout = React.memo(function BuilderLayout({
         onToggle={() => setShowControls(!showControls)}
       />
 
-      {/* Control Panels */}
-      <ControlsPanels
-        showControls={showControls}
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
-        pattern={pattern}
-        onPrimaryColorChange={setPrimaryColor}
-        onSecondaryColorChange={setSecondaryColor}
-        onPatternChange={setPattern}
+      {/* Color Controls Panel - Left Side */}
+      {showControls && (
+        <div className={styles.leftControlsWrapper}>
+          <ColorControlsPanel
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            pattern={pattern}
+            onPrimaryColorChange={setPrimaryColor}
+            onSecondaryColorChange={setSecondaryColor}
+            onPatternChange={setPattern}
+          />
+        </div>
+      )}
+
+      {/* AI Assistant Panel - Right Side */}
+      <AIAssistantPanel 
         onTextureGenerated={handleTextureGenerated}
         onApplyTexture={handleApplyTexture}
       />

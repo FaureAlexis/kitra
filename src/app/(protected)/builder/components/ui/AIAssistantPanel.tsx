@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Wand2, Sparkles, Image, Download, Trash2, Eye, Send, ChevronDown, ChevronUp } from 'lucide-react';
-import { GlassButton } from './GlassButton';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { useAITexture, TextureGenerationOptions, GeneratedTexture } from '../../../../../lib/services/ai-texture.service';
-import styles from '../../builder.module.css';
+import { useAITexture } from '../../../../../lib/services/ai-texture.service';
+import { GlassButton } from './GlassButton';
+import { GlassDropdown } from './GlassDropdown';
+import { GlassTextarea } from './GlassTextarea';
+import { GlassInput } from './GlassInput';
+import type { TextureGenerationOptions } from '../../../../../lib/services/ai-texture.service';
 
 interface AIAssistantPanelProps {
   onTextureGenerated?: (textureUrl: string, textureId: string) => void;
@@ -23,21 +25,23 @@ export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAss
   const [teamName, setTeamName] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showTextures, setShowTextures] = useState(false);
-  const [generatedTextures, setGeneratedTextures] = useState<GeneratedTexture[]>([]);
   
-  const aiTexture = useAITexture();
-
-  // Load cached textures on mount
-  useEffect(() => {
-    setGeneratedTextures(aiTexture.getAllTextures());
-  }, []);
+  const {
+    generateTexture,
+    textures,
+    removeTexture,
+    clearAll,
+    getTotalSize,
+    generatePromptSuggestions,
+    validatePrompt
+  } = useAITexture();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim() || isGenerating) return;
 
     // Validate prompt
-    const validation = aiTexture.validatePrompt(prompt);
+    const validation = validatePrompt(prompt);
     if (!validation.valid) {
       toast.error(`Invalid prompt: ${validation.suggestions?.join(', ')}`);
       return;
@@ -53,20 +57,16 @@ export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAss
         teamName: teamName.trim() || undefined,
       };
 
-      toast.info('Generating texture with GPT-image-1...', {
+      toast.info('Generating texture with gpt-image-1...', {
         description: 'This may take 10-30 seconds'
       });
 
-      const result = await aiTexture.generateTexture(options);
+      const result = await generateTexture(options);
 
       if (result.success && result.texture) {
-        // Update local state
-        const updatedTextures = aiTexture.getAllTextures();
-        setGeneratedTextures(updatedTextures);
-
         // Notify parent component
-        if (onTextureGenerated) {
-          onTextureGenerated(result.texture.url!, result.texture.id);
+        if (onTextureGenerated && result.texture.url) {
+          onTextureGenerated(result.texture.url, result.texture.id);
         }
 
         toast.success('Texture generated successfully!', {
@@ -100,227 +100,213 @@ export const AIAssistantPanel = React.memo<AIAssistantPanelProps>(function AIAss
     }
   };
 
-  const handleDownloadTexture = (texture: GeneratedTexture) => {
-    if (texture.url) {
-      const link = document.createElement('a');
-      link.href = texture.url;
-      link.download = `kitra-texture-${texture.id}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('Texture downloaded!');
-    }
+  const handleRemoveTexture = (textureId: string) => {
+    removeTexture(textureId);
+    toast.success('Texture removed from storage');
   };
 
-  const handleDeleteTexture = (textureId: string) => {
-    aiTexture.removeTexture(textureId);
-    setGeneratedTextures(aiTexture.getAllTextures());
-    toast.success('Texture deleted');
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const presetPrompts = [
-    "Bold blue and white stripes with modern geometric accents",
-    "Classic red jersey with lightning bolt patterns", 
-    "Minimalist black kit with subtle gradient textures",
-    "Arsenal-inspired design with cannon emblems",
-    "Barcelona-style blaugrana with golden details"
-  ];
+  const formatTimestamp = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  };
 
   return (
-    <div className={`${styles.controlPanel} ${styles.glassPanel}`}>
-      <div className={styles.panelHeader}>
-        <Wand2 className={styles.panelIcon} />
-        <h2 className={styles.panelTitle}>AI Texture Generator</h2>
-        <span className="text-xs bg-pink-500/20 text-pink-400 px-2 py-1 rounded-full ml-2">
-          GPT-image-1
-        </span>
-      </div>
-
-      {/* Generation Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className={styles.glassLabel}>
-            Describe your ideal kit texture
-          </label>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g., Dynamic lightning patterns in electric blue and white with modern geometric elements..."
-            className={styles.glassTextarea}
-            rows={3}
-            disabled={isGenerating}
-          />
+    <div className="w-80 max-h-[calc(100vh-160px)] overflow-y-auto glass-panel" style={{
+      position: 'fixed',
+      right: '20px',
+      top: '100px',
+      zIndex: 100
+    }}>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-white">AI Assistant</h3>
+          <div className="flex gap-2">
+            <GlassButton
+              size="sm"
+              onClick={() => setShowTextures(!showTextures)}
+              className={showTextures ? 'text-pink-400' : ''}
+            >
+              Gallery ({textures.length})
+            </GlassButton>
+          </div>
         </div>
 
-        {/* Advanced Options Toggle */}
-        <GlassButton
-          type="button"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          variant="secondary"
-          className="w-full text-sm"
-        >
-          {showAdvanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          Advanced Options
-        </GlassButton>
-
-        {/* Advanced Options */}
-        {showAdvanced && (
-          <div className="space-y-3 border border-white/10 rounded-lg p-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Style</label>
-                <select
-                  value={style}
-                  onChange={(e) => setStyle(e.target.value as any)}
-                  disabled={isGenerating}
-                  className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded text-sm text-white"
-                >
-                  <option value="modern">Modern</option>
-                  <option value="photorealistic">Photorealistic</option>
-                  <option value="artistic">Artistic</option>
-                  <option value="minimalist">Minimalist</option>
-                  <option value="vintage">Vintage</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Kit Type</label>
-                <select
-                  value={kitType}
-                  onChange={(e) => setKitType(e.target.value as any)}
-                  disabled={isGenerating}
-                  className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded text-sm text-white"
-                >
-                  <option value="home">Home Kit</option>
-                  <option value="away">Away Kit</option>
-                  <option value="third">Third Kit</option>
-                  <option value="goalkeeper">Goalkeeper</option>
-                </select>
+        {/* Texture Gallery */}
+        {showTextures && (
+          <div className="mb-6 p-4 bg-black/20 rounded-lg border border-white/10">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-white">Stored Textures</h4>
+              <div className="flex gap-2">
+                <span className="text-xs text-gray-400">
+                  {formatFileSize(getTotalSize())}
+                </span>
+                {textures.length > 0 && (
+                  <GlassButton
+                    size="sm"
+                    onClick={() => {
+                      clearAll();
+                      toast.success('All textures cleared');
+                    }}
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    Clear All
+                  </GlassButton>
+                )}
               </div>
             </div>
             
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Team Name (optional)</label>
-              <input
-                type="text"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                placeholder="e.g., Arsenal, Barcelona..."
-                disabled={isGenerating}
-                className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded text-sm text-white placeholder-gray-400"
-              />
-            </div>
+            {textures.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">
+                No textures stored yet. Generate some textures to see them here!
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                {textures.map((texture) => (
+                  <div
+                    key={texture.id}
+                    className="relative group bg-black/30 rounded-lg p-2 border border-white/10 hover:border-white/20 transition-colors"
+                  >
+                    {texture.url && (
+                      <img
+                        src={texture.url}
+                        alt={`Texture: ${texture.metadata.prompt.substring(0, 30)}`}
+                        className="w-full h-20 object-cover rounded-md mb-2"
+                      />
+                    )}
+                    <p className="text-xs text-gray-300 mb-1 truncate">
+                      {texture.metadata.prompt.substring(0, 25)}...
+                    </p>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {formatTimestamp(texture.metadata.timestamp)}
+                    </p>
+                    <div className="flex gap-1">
+                      <GlassButton
+                        size="sm"
+                        onClick={() => handleApplyTexture(texture.id)}
+                        className="text-xs flex-1"
+                      >
+                        Apply
+                      </GlassButton>
+                      <GlassButton
+                        size="sm"
+                        onClick={() => handleRemoveTexture(texture.id)}
+                        className="text-xs text-red-400 hover:text-red-300"
+                      >
+                        ×
+                      </GlassButton>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
-        
-        <GlassButton
-          type="submit"
-          variant="primary"
-          disabled={!prompt.trim() || isGenerating}
-          className="w-full"
-        >
-          {isGenerating ? (
-            <>
-              <Sparkles size={16} className="animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Image size={16} />
-              Generate Texture
-            </>
-          )}
-        </GlassButton>
-      </form>
 
-      {/* Quick Ideas */}
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <p className="text-xs text-gray-400 mb-2">Quick Ideas:</p>
-        <div className="space-y-1">
-          {presetPrompts.map((presetPrompt, index) => (
-            <button
-              key={index}
-              onClick={() => setPrompt(presetPrompt)}
-              disabled={isGenerating}
-              className="w-full text-left text-xs text-gray-300 hover:text-white transition-colors py-1 px-2 rounded hover:bg-white/5"
+        {/* Generation Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Describe your kit design
+            </label>
+                         <GlassTextarea
+               value={prompt}
+               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
+               placeholder="e.g., Modern football kit with geometric patterns and lightning bolts"
+               className="h-20"
+               disabled={isGenerating}
+             />
+          </div>
+
+          <div className="flex gap-2">
+            <GlassButton
+              type="button"
+              size="sm"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-sm"
             >
-              • {presetPrompt}
-            </button>
-          ))}
-        </div>
-      </div>
+              {showAdvanced ? 'Hide' : 'Show'} Advanced
+            </GlassButton>
+          </div>
 
-      {/* Generated Textures */}
-      {generatedTextures.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-white/10">
-          <GlassButton
-            type="button"
-            onClick={() => setShowTextures(!showTextures)}
-            variant="secondary"
-            className="w-full text-sm mb-3"
-          >
-            {showTextures ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            Generated Textures ({generatedTextures.length})
-          </GlassButton>
+          {showAdvanced && (
+            <div className="space-y-3 p-3 bg-black/20 rounded-lg border border-white/10">
+              <div>
+                <label className="block text-sm font-medium text-white mb-1">
+                  Style
+                </label>
+                                 <GlassDropdown
+                   value={style || 'modern'}
+                   onChange={(value: string) => setStyle(value as TextureGenerationOptions['style'])}
+                   options={[
+                     { value: 'modern', label: 'Modern' },
+                     { value: 'photorealistic', label: 'Photorealistic' },
+                     { value: 'artistic', label: 'Artistic' },
+                     { value: 'minimalist', label: 'Minimalist' },
+                     { value: 'vintage', label: 'Vintage' }
+                   ]}
+                 />
+              </div>
 
-          {showTextures && (
-            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-              {generatedTextures.map((texture) => (
-                <div
-                  key={texture.id}
-                  className="relative group bg-white/5 border border-white/10 rounded-lg p-1"
-                >
-                  {texture.url && (
-                    <img
-                      src={texture.url}
-                      alt="Generated texture"
-                      className="w-full h-12 object-cover rounded"
-                    />
-                  )}
-                  
-                  {/* Action buttons overlay */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => handleApplyTexture(texture.id)}
-                      className="p-1 bg-pink-500/80 hover:bg-pink-500 rounded text-white"
-                      title="Apply"
-                    >
-                      <Eye className="w-3 h-3" />
-                    </button>
-                    
-                    <button
-                      onClick={() => handleDownloadTexture(texture)}
-                      className="p-1 bg-white/20 hover:bg-white/30 rounded text-white"
-                      title="Download"
-                    >
-                      <Download className="w-3 h-3" />
-                    </button>
-                    
-                    <button
-                      onClick={() => handleDeleteTexture(texture.id)}
-                      className="p-1 bg-red-500/80 hover:bg-red-500 rounded text-white"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                  
-                  {/* Metadata */}
-                  <p className="text-xs text-gray-400 mt-1 truncate">
-                    {texture.metadata.style}
-                  </p>
-                </div>
-              ))}
+              <div>
+                <label className="block text-sm font-medium text-white mb-1">
+                  Kit Type
+                </label>
+                                 <GlassDropdown
+                   value={kitType || 'home'}
+                   onChange={(value: string) => setKitType(value as TextureGenerationOptions['kitType'])}
+                   options={[
+                     { value: 'home', label: 'Home' },
+                     { value: 'away', label: 'Away' },
+                     { value: 'third', label: 'Third' },
+                     { value: 'goalkeeper', label: 'Goalkeeper' }
+                   ]}
+                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white mb-1">
+                  Team Name (Optional)
+                </label>
+                                 <GlassInput
+                   value={teamName}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value)}
+                   placeholder="e.g., Real Madrid"
+                 />
+              </div>
             </div>
           )}
-        </div>
-      )}
 
-      {/* Keyboard Shortcuts */}
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <p className="text-xs text-gray-400 mb-2">Keyboard Shortcuts:</p>
-        <p className="text-xs text-gray-500">Ctrl+H: Toggle panels</p>
-        <p className="text-xs text-gray-500">Ctrl+L: Toggle Leva</p>
+          <GlassButton
+            type="submit"
+            size="lg"
+            disabled={!prompt.trim() || isGenerating}
+            className="w-full"
+          >
+            {isGenerating ? 'Generating...' : 'Generate Texture'}
+          </GlassButton>
+        </form>
+
+        {/* Usage Stats */}
+        <div className="mt-4 p-3 bg-black/20 rounded-lg border border-white/10">
+          <div className="flex justify-between items-center text-xs text-gray-400">
+            <span>Storage Used:</span>
+            <span>{formatFileSize(getTotalSize())} / 50MB</span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-1 mt-2">
+            <div
+              className="bg-pink-500 h-1 rounded-full transition-all duration-500"
+              style={{ width: `${Math.min((getTotalSize() / (50 * 1024 * 1024)) * 100, 100)}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
