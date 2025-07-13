@@ -1,8 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BuilderLayout } from './components/layout/BuilderLayout';
 
 export default function BuilderPage() {
-  return <BuilderLayout modelPath="/models/jersey.glb" />;
+  return (
+    <Suspense fallback={<div>Loading builder...</div>}>
+      <BuilderLayout modelPath="/models/jersey.glb" />
+    </Suspense>
+  );
 } 

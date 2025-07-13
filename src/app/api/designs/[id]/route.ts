@@ -19,12 +19,13 @@ export interface DesignDetailsResponse {
 // GET /api/designs/[id] - Fetch specific design details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  console.log('🔍 [DESIGN DETAILS API] Fetching design details for ID:', params.id);
+  const { id } = await params;
+  console.log('🔍 [DESIGN DETAILS API] Fetching design details for ID:', id);
   
   try {
-    const designId = params.id;
+    const designId = id;
     
     if (!designId) {
       return NextResponse.json(
