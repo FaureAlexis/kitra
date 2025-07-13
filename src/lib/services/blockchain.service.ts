@@ -35,18 +35,28 @@ export interface VoteResult {
 }
 
 class BlockchainService {
-  private ethersService: EthersService;
+  private ethersService: EthersService | null = null;
   private isInitialized = false;
 
   constructor() {
-    // Initialize with environment variables
-    this.ethersService = new EthersService({
-      rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || 'https://spicy-rpc.chiliz.com',
-      designCandidateAddress: process.env.NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS || '',
-      governorAddress: process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '',
-      privateKey: process.env.BLOCKCHAIN_PRIVATE_KEY, // Only for server-side operations
-    });
-    this.isInitialized = true;
+    // Don't initialize immediately - wait for first method call
+  }
+
+  private ensureInitialized() {
+    if (!this.isInitialized) {
+      console.log('🔧 [BlockchainService] Lazy initializing with environment variables...');
+      console.log('🔑 Private key available:', !!process.env.BLOCKCHAIN_PRIVATE_KEY);
+      console.log('📋 Contract address:', process.env.NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS);
+      
+      this.ethersService = new EthersService({
+        rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || 'https://spicy-rpc.chiliz.com',
+        designCandidateAddress: process.env.NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS || '',
+        governorAddress: process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '',
+        privateKey: process.env.BLOCKCHAIN_PRIVATE_KEY, // Only for server-side operations
+      });
+      this.isInitialized = true;
+      console.log('✅ [BlockchainService] Initialization complete');
+    }
   }
 
   /**
@@ -58,8 +68,9 @@ class BlockchainService {
     ipfsMetadataUrl: string,
     highPriority: boolean = false
   ): Promise<{ tokenId: number; transactionHash: string }> {
-    if (!this.isInitialized) {
-      throw new Error('Blockchain service not initialized');
+    this.ensureInitialized();
+    if (!this.ethersService) {
+      throw new Error('Blockchain service failed to initialize');
     }
 
     console.log('🔗 [Blockchain] Minting design NFT:', {
@@ -69,7 +80,7 @@ class BlockchainService {
     });
 
     try {
-      const result = await this.ethersService.mintDesign(
+      const result = await this.ethersService!.mintDesign(
         designerAddress,
         designName,
         ipfsMetadataUrl,
