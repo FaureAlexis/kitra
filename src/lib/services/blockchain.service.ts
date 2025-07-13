@@ -130,14 +130,9 @@ class BlockchainService {
     this.ensureInitialized();
     console.log('🗳️ [BlockchainService] Getting voting power for:', address.slice(0, 8) + '...');
 
-    try {
-      const votingPower = await this.ethersService!.getVotingPower(address);
-      console.log('✅ [BlockchainService] Voting power:', votingPower);
-      return votingPower;
-    } catch (error) {
-      console.warn('⚠️ [BlockchainService] Failed to get voting power:', error);
-      return 0; // Return 0 if we can't check (e.g., ENS errors on Chiliz)
-    }
+    const votingPower = await this.ethersService!.getVotingPower(address);
+    console.log('✅ [BlockchainService] Voting power:', votingPower);
+    return votingPower;
   }
 
   /**

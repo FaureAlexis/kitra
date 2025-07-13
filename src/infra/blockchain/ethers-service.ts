@@ -485,6 +485,12 @@ export class EthersService {
    */
   async getVotingPower(address: string, blockNumber?: number): Promise<number> {
     try {
+      // If governor address is not configured, return default voting power
+      if (!this.governorContract.target || this.governorContract.target === '') {
+        console.warn("⚠️ Governor contract not configured, returning default voting power");
+        return 1; // Default voting power for simplified voting
+      }
+      
       const currentBlock = blockNumber || await this.provider.getBlockNumber();
       const votes = await this.governorContract.getVotes(address, currentBlock);
       return parseInt(votes.toString());
@@ -493,6 +499,11 @@ export class EthersService {
       if (error?.code === 'UNSUPPORTED_OPERATION' && error?.operation === 'getEnsAddress') {
         console.warn("⚠️ ENS not supported on this network, returning default voting power");
         return 1; // Default voting power for networks without ENS
+      }
+      // Handle unconfigured ENS names
+      if (error?.code === 'UNCONFIGURED_NAME') {
+        console.warn("⚠️ Governor contract address not properly configured, returning default voting power");
+        return 1; // Default voting power for unconfigured contracts
       }
       console.error("Error getting voting power:", error);
       throw new Error("Failed to get voting power");
