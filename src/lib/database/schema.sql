@@ -48,6 +48,11 @@ CREATE TABLE designs (
   download_count INTEGER DEFAULT 0,
   share_count INTEGER DEFAULT 0,
   
+  -- Voting (cached counts)
+  votes INTEGER DEFAULT 0, -- Legacy vote count for UI compatibility
+  votes_for INTEGER DEFAULT 0,
+  votes_against INTEGER DEFAULT 0,
+  
   -- Timestamps
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),

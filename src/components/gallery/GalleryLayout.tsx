@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GalleryHeader } from './GalleryHeader';
-import { GalleryFilters } from './GalleryFilters';
-import { GalleryGrid } from './GalleryGrid';
 import { useDesigns } from '@/hooks/useDesigns';
 import { useVoting } from '@/hooks/useVoting';
+import { GalleryFilters } from './GalleryFilters';
+import { GalleryGrid } from './GalleryGrid';
 import { toast } from 'sonner';
 
 interface GalleryLayoutProps {
@@ -33,13 +32,12 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
     search: searchQuery || undefined
   });
 
-  // Use voting hook for real vote functionality
+  // Use simplified voting hook
   const {
     castVote,
-    createProposal,
     checkVoteStatus,
+    hasUserVoted,
     isVoting,
-    isCreatingProposal,
     error: votingError
   } = useVoting();
 
@@ -75,68 +73,36 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
     refetchDesigns();
   };
 
-  // Action handlers
+  // Simplified vote handler - directly vote on design
   const handleVote = async (id: string) => {
     console.log('🗳️ [GalleryLayout] Vote for design:', id);
     
     try {
-      // First check if a proposal exists for this design
-      const proposalData = await checkVoteStatus(id);
-      
-      if (!proposalData) {
-        // No proposal exists, need to create one first
-        const design = designs.find(d => d.id === id);
-        if (!design) {
-          toast.error('Design not found');
-          return;
-        }
-
-        if (!design.tokenId) {
-          toast.error('This design is not minted as an NFT yet');
-          return;
-        }
-
-        console.log('📝 [GalleryLayout] Creating proposal for design:', design.name);
-        toast.info('Creating proposal...', {
-          description: 'Setting up voting for this design'
-        });
-
-        const proposalResult = await createProposal(
-          design.tokenId,
-          `Approve design: ${design.name}`,
-          design.description,
-          'approval'
-        );
-
-        if (!proposalResult.success) {
-          toast.error('Failed to create proposal', {
-            description: proposalResult.error
-          });
-          return;
-        }
-
-        toast.success('Proposal created!', {
-          description: 'You can now vote on this design'
-        });
-
-        // Refresh designs to show updated status
-        refetchDesigns();
+      const design = designs.find(d => d.id === id);
+      if (!design) {
+        toast.error('Design not found');
         return;
       }
 
-      // Proposal exists, check if user already voted
-      if (proposalData.hasUserVoted) {
+      if (design.status !== 'candidate') {
+        toast.error('This design is not eligible for voting');
+        return;
+      }
+
+      // Check if user has already voted
+      const voteStatus = await checkVoteStatus(id);
+      if (voteStatus && await hasUserVoted(id)) {
         toast.info('You have already voted on this design');
         return;
       }
 
       // Cast vote (always vote FOR in gallery)
-      console.log('🗳️ [GalleryLayout] Casting vote for proposal:', proposalData.id);
-      const voteResult = await castVote(proposalData.id, true);
+      console.log('🗳️ [GalleryLayout] Casting vote for design:', design.name);
+      const voteResult = await castVote(id, true); // true = support
 
       if (voteResult.success) {
         toast.success('Vote cast successfully!', {
-          description: 'Your vote has been recorded on the blockchain'
+          description: 'Your vote has been recorded'
         });
         
         // Refresh designs to show updated vote counts
@@ -171,58 +137,24 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
     });
   };
 
-  // Search filtering is now handled server-side by the API
+  // Show voting error if any
+  if (votingError) {
+    console.warn('⚠️ [GalleryLayout] Voting error:', votingError);
+  }
 
   return (
-    <div className={`min-h-screen bg-background ${className}`}>
-
-
-      {/* Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-      {/* Header */}
-      <GalleryHeader
-        total={total}
-        loading={loading}
-        onRefresh={handleRefresh}
+    <div className={`space-y-8 ${className}`}>
+      <GalleryFilters
+        currentFilter={currentFilter}
+        currentTags={currentTags}
+        searchQuery={searchQuery}
+        onFilterChange={handleFilterChange}
+        onTagToggle={handleTagToggle}
+        onSearchChange={handleSearchChange}
+        onClearFilters={handleClearFilters}
       />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 pb-16">
-        {/* Filters */}
-        <div className="mb-12">
-          <GalleryFilters
-            currentFilter={currentFilter}
-            currentTags={currentTags}
-            searchQuery={searchQuery}
-            onFilterChange={handleFilterChange}
-            onTagToggle={handleTagToggle}
-            onSearchChange={handleSearchChange}
-            onClearFilters={handleClearFilters}
-          />
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="mb-8 p-6 bg-destructive/10 border border-destructive/20 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center">
-                <span className="text-destructive text-sm">⚠️</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-destructive mb-1">Error loading designs</h3>
-                <p className="text-sm text-destructive/80">{error}</p>
-              </div>
-              <button
-                onClick={handleRefresh}
-                className="px-4 py-2 bg-destructive/20 hover:bg-destructive/30 text-destructive rounded-lg transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Gallery Grid */}
+      <div className="min-h-screen">
         <GalleryGrid
           designs={designs}
           loading={loading}
@@ -231,7 +163,7 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
           onVote={handleVote}
           onShare={handleShare}
           onFavorite={handleFavorite}
-          isVoting={isVoting || isCreatingProposal}
+          isVoting={isVoting}
         />
       </div>
     </div>
