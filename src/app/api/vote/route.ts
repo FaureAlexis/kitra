@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { blockchainService } from '@/lib/services/blockchain.service';
+import { db } from '@/lib/database/client';
 
 interface CastVoteRequest {
   proposalId: string;
@@ -66,25 +67,59 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log('✅ [VOTE API] Request validation passed');
 
-    // Check if user has already voted (prevent double voting)
-    console.log('🔍 [VOTE API] Checking if user has already voted...');
+    // Check if proposal exists in database
+    console.log('🔍 [VOTE API] Checking if proposal exists in database...');
+    const { data: proposal, error: proposalError } = await db.getAdminClient()
+      .from('proposals')
+      .select('*')
+      .eq('blockchain_proposal_id', body.proposalId)
+      .single();
+
+    if (proposalError || !proposal) {
+      console.error('❌ [VOTE API] Proposal not found in database:', proposalError);
+      return NextResponse.json(
+        { success: false, error: 'Proposal not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if user has already voted in database
+    console.log('🔍 [VOTE API] Checking if user has already voted in database...');
+    const { data: existingVote } = await db.getAdminClient()
+      .from('votes')
+      .select('id')
+      .eq('proposal_id', proposal.id)
+      .eq('voter_address', body.voterAddress.toLowerCase())
+      .single();
+
+    if (existingVote) {
+      console.log('⚠️ [VOTE API] User has already voted in database');
+      return NextResponse.json(
+        { success: false, error: 'You have already voted on this proposal' },
+        { status: 409 }
+      );
+    }
+
+    // Check blockchain for double voting (fallback)
+    console.log('🔍 [VOTE API] Double-checking blockchain vote status...');
     try {
       const hasVoted = await blockchainService.hasUserVoted(body.proposalId, body.voterAddress);
       if (hasVoted) {
-        console.log('⚠️ [VOTE API] User has already voted on this proposal');
+        console.log('⚠️ [VOTE API] User has already voted on blockchain');
         return NextResponse.json(
           { success: false, error: 'You have already voted on this proposal' },
           { status: 409 }
         );
       }
     } catch (voteCheckError) {
-      console.warn('⚠️ [VOTE API] Could not check vote status, proceeding anyway:', voteCheckError);
+      console.warn('⚠️ [VOTE API] Could not check blockchain vote status:', voteCheckError);
     }
 
     // Get user's voting power
     console.log('🔍 [VOTE API] Checking voter\'s voting power...');
+    let votingPower = 1; // Default voting power
     try {
-      const votingPower = await blockchainService.getVotingPower(body.voterAddress);
+      votingPower = await blockchainService.getVotingPower(body.voterAddress);
       if (votingPower === 0) {
         console.log('⚠️ [VOTE API] User has no voting power');
         return NextResponse.json(
@@ -94,73 +129,100 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
       console.log('✅ [VOTE API] User has voting power:', votingPower);
     } catch (powerError) {
-      console.warn('⚠️ [VOTE API] Could not check voting power, proceeding anyway:', powerError);
+      console.warn('⚠️ [VOTE API] Could not check voting power, using default:', powerError);
     }
 
     // Cast the vote on blockchain
-    console.log('🗳️ [VOTE API] Casting vote on blockchain...');
-    try {
-      const voteResult = await blockchainService.castVote(
-        body.proposalId,
-        body.support,
-        body.reason
-      );
+    console.log('🔗 [VOTE API] Casting vote on blockchain...');
+    const voteResult = await blockchainService.castVote(
+      body.proposalId,
+      body.support,
+      body.reason
+    );
 
-      console.log('✅ [VOTE API] Vote cast successfully:', {
-        transactionHash: voteResult.transactionHash,
+    console.log('✅ [VOTE API] Vote cast on blockchain:', {
+      transactionHash: voteResult.transactionHash,
+      weight: voteResult.weight,
+      support: voteResult.support
+    });
+
+    // Store vote in database
+    console.log('💾 [VOTE API] Storing vote in database...');
+    const { error: voteInsertError } = await db.getAdminClient()
+      .from('votes')
+      .insert({
+        voter_address: body.voterAddress.toLowerCase(),
+        design_id: proposal.design_id,
+        proposal_id: proposal.id,
+        support: body.support,
         weight: voteResult.weight,
-        support: voteResult.support
+        reason: body.reason || null,
+        transaction_hash: voteResult.transactionHash
       });
 
-      // TODO: Store vote in database for faster queries
-      console.log('📝 [VOTE API] TODO: Store vote in database for analytics');
-
-      const response: VoteResponse = {
-        success: true,
-        transactionHash: voteResult.transactionHash,
-        weight: voteResult.weight,
-        proposalId: body.proposalId
-      };
-
-      return NextResponse.json(response);
-
-    } catch (voteError) {
-      console.error('❌ [VOTE API] Failed to cast vote on blockchain:', voteError);
-      
-      // Handle specific blockchain errors
-      if (voteError instanceof Error) {
-        if (voteError.message.includes('already voted')) {
-          return NextResponse.json(
-            { success: false, error: 'You have already voted on this proposal' },
-            { status: 409 }
-          );
-        }
-        
-        if (voteError.message.includes('not active')) {
-          return NextResponse.json(
-            { success: false, error: 'Voting period has ended for this proposal' },
-            { status: 410 }
-          );
-        }
-        
-        if (voteError.message.includes('insufficient')) {
-          return NextResponse.json(
-            { success: false, error: 'Insufficient voting power or gas' },
-            { status: 403 }
-          );
-        }
-      }
-
-      return NextResponse.json(
-        { success: false, error: 'Failed to cast vote. Please try again.' },
-        { status: 500 }
-      );
+    if (voteInsertError) {
+      console.error('❌ [VOTE API] Failed to store vote in database:', voteInsertError);
+      // Vote was cast on blockchain but not stored in database - log for manual resolution
+    } else {
+      console.log('✅ [VOTE API] Vote stored in database successfully');
     }
+
+    // Update proposal vote counts in database
+    console.log('📊 [VOTE API] Updating proposal vote counts...');
+    const voteIncrement = body.support ? 'votes_for' : 'votes_against';
+    const { error: updateError } = await db.getAdminClient()
+      .from('proposals')
+      .update({
+        [voteIncrement]: proposal[voteIncrement] + voteResult.weight,
+        total_votes: proposal.total_votes + voteResult.weight,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', proposal.id);
+
+    if (updateError) {
+      console.error('❌ [VOTE API] Failed to update proposal counts:', updateError);
+    } else {
+      console.log('✅ [VOTE API] Proposal vote counts updated');
+    }
+
+    const response: VoteResponse = {
+      success: true,
+      transactionHash: voteResult.transactionHash,
+      weight: voteResult.weight,
+      proposalId: body.proposalId
+    };
+
+    console.log('🎉 [VOTE API] Vote completed successfully');
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('💥 [VOTE API] Critical error:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('insufficient funds')) {
+        return NextResponse.json(
+          { success: false, error: 'Insufficient funds for transaction. Please ensure you have enough tokens for gas fees.' },
+          { status: 402 }
+        );
+      }
+      
+      if (error.message.includes('user denied')) {
+        return NextResponse.json(
+          { success: false, error: 'Transaction was cancelled by user.' },
+          { status: 400 }
+        );
+      }
+
+      if (error.message.includes('proposal not active')) {
+        return NextResponse.json(
+          { success: false, error: 'This proposal is no longer active for voting.' },
+          { status: 410 }
+        );
+      }
+    }
+
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Failed to cast vote. Please try again.' },
       { status: 500 }
     );
   }
@@ -239,8 +301,44 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         transactionHash: proposalResult.transactionHash
       });
 
-      // TODO: Store proposal in database for faster queries
-      console.log('📝 [VOTE API] TODO: Store proposal in database');
+      // Store proposal in database
+      console.log('💾 [VOTE API] Storing proposal in database...');
+      
+      // First, get the design to link the proposal
+      const { data: design, error: designError } = await db.getAdminClient()
+        .from('designs')
+        .select('id')
+        .eq('token_id', body.designTokenId)
+        .single();
+
+      if (designError || !design) {
+        console.warn('⚠️ [VOTE API] Could not find design for token ID:', body.designTokenId, designError);
+        // Continue anyway, proposal was created on blockchain
+      }
+
+      const { error: proposalInsertError } = await db.getAdminClient()
+        .from('proposals')
+        .insert({
+          blockchain_proposal_id: proposalResult.proposalId,
+          proposer_address: body.proposerAddress.toLowerCase(),
+          design_id: design?.id || null,
+          proposal_type: body.proposalType,
+          title: body.title,
+          description: body.description || '',
+          votes_for: 0,
+          votes_against: 0,
+          votes_abstain: 0,
+          total_votes: 0,
+          transaction_hash: proposalResult.transactionHash,
+          status: 'active'
+        });
+
+      if (proposalInsertError) {
+        console.error('❌ [VOTE API] Failed to store proposal in database:', proposalInsertError);
+        // Proposal was created on blockchain but not stored in database - log for manual resolution
+      } else {
+        console.log('✅ [VOTE API] Proposal stored in database successfully');
+      }
 
       const response: VoteResponse = {
         success: true,

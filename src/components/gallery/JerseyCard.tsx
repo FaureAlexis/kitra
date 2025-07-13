@@ -15,6 +15,7 @@ interface JerseyCardProps {
   onFavorite?: (id: string) => void;
   className?: string;
   isPinterestStyle?: boolean;
+  isVoting?: boolean;
 }
 
 export const JerseyCard: React.FC<JerseyCardProps> = ({
@@ -23,7 +24,8 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
   onShare,
   onFavorite,
   className = '',
-  isPinterestStyle = false
+  isPinterestStyle = false,
+  isVoting = false
 }) => {
   const formatCreator = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -250,8 +252,9 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
                 size="sm"
                 className="h-8 px-3 text-xs bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                 onClick={() => onVote?.(design.id)}
+                disabled={isVoting}
               >
-                Vote
+                {isVoting ? 'Voting...' : 'Vote'}
                 <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             )}

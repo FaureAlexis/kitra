@@ -5,6 +5,7 @@ import { GalleryHeader } from './GalleryHeader';
 import { GalleryFilters } from './GalleryFilters';
 import { GalleryGrid } from './GalleryGrid';
 import { useDesigns } from '@/hooks/useDesigns';
+import { useVoting } from '@/hooks/useVoting';
 import { toast } from 'sonner';
 
 interface GalleryLayoutProps {
@@ -31,6 +32,16 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
     tags: currentTags.length > 0 ? currentTags : undefined,
     search: searchQuery || undefined
   });
+
+  // Use voting hook for real vote functionality
+  const {
+    castVote,
+    createProposal,
+    checkVoteStatus,
+    isVoting,
+    isCreatingProposal,
+    error: votingError
+  } = useVoting();
 
   // Handle filter changes
   const handleFilterChange = (filter: 'all' | 'published' | 'candidate' | 'draft') => {
@@ -65,11 +76,83 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
   };
 
   // Action handlers
-  const handleVote = (id: string) => {
+  const handleVote = async (id: string) => {
     console.log('🗳️ [GalleryLayout] Vote for design:', id);
-    toast.success('Vote recorded!', {
-      description: `Your vote for design ${id} has been recorded.`
-    });
+    
+    try {
+      // First check if a proposal exists for this design
+      const proposalData = await checkVoteStatus(id);
+      
+      if (!proposalData) {
+        // No proposal exists, need to create one first
+        const design = designs.find(d => d.id === id);
+        if (!design) {
+          toast.error('Design not found');
+          return;
+        }
+
+        if (!design.tokenId) {
+          toast.error('This design is not minted as an NFT yet');
+          return;
+        }
+
+        console.log('📝 [GalleryLayout] Creating proposal for design:', design.name);
+        toast.info('Creating proposal...', {
+          description: 'Setting up voting for this design'
+        });
+
+        const proposalResult = await createProposal(
+          design.tokenId,
+          `Approve design: ${design.name}`,
+          design.description,
+          'approval'
+        );
+
+        if (!proposalResult.success) {
+          toast.error('Failed to create proposal', {
+            description: proposalResult.error
+          });
+          return;
+        }
+
+        toast.success('Proposal created!', {
+          description: 'You can now vote on this design'
+        });
+
+        // Refresh designs to show updated status
+        refetchDesigns();
+        return;
+      }
+
+      // Proposal exists, check if user already voted
+      if (proposalData.hasUserVoted) {
+        toast.info('You have already voted on this design');
+        return;
+      }
+
+      // Cast vote (always vote FOR in gallery)
+      console.log('🗳️ [GalleryLayout] Casting vote for proposal:', proposalData.id);
+      const voteResult = await castVote(proposalData.id, true);
+
+      if (voteResult.success) {
+        toast.success('Vote cast successfully!', {
+          description: 'Your vote has been recorded on the blockchain'
+        });
+        
+        // Refresh designs to show updated vote counts
+        refetchDesigns();
+      } else {
+        toast.error('Failed to cast vote', {
+          description: voteResult.error
+        });
+      }
+
+    } catch (error) {
+      console.error('❌ [GalleryLayout] Vote error:', error);
+      toast.error('Voting failed', {
+        description: 'Please try again later'
+      });
+    }
   };
 
   const handleShare = (id: string) => {
@@ -148,6 +231,7 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
           onVote={handleVote}
           onShare={handleShare}
           onFavorite={handleFavorite}
+          isVoting={isVoting || isCreatingProposal}
         />
       </div>
     </div>

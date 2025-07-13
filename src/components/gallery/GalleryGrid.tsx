@@ -15,6 +15,7 @@ interface GalleryGridProps {
   onVote?: (id: string) => void;
   onShare?: (id: string) => void;
   onFavorite?: (id: string) => void;
+  isVoting?: boolean;
 }
 
 export const GalleryGrid: React.FC<GalleryGridProps> = ({
@@ -24,7 +25,8 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
   onLoadMore,
   onVote,
   onShare,
-  onFavorite
+  onFavorite,
+  isVoting = false
 }) => {
   const [columns, setColumns] = useState(3);
   const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
@@ -199,6 +201,7 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
                     onShare={onShare}
                     onFavorite={onFavorite}
                     isPinterestStyle={true}
+                    isVoting={isVoting}
                   />
                 </div>
               );
