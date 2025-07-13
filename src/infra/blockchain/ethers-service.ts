@@ -83,25 +83,42 @@ export class EthersService {
       
       if (highPriority) {
         console.log("🚀 [EthersService] Using ULTRA HIGH priority gas settings...");
-        // CHILIZ COMPLIANT gas settings - minimum 2,501 gwei as per docs
+        // CHILIZ EIP-1559 COMPLIANT fees - minimum gas 2,501 gwei, priority 1 gwei
+        const chilizMinGasFee = ethers.parseUnits('2501', 'gwei');
+        const chilizMinPriorityFee = ethers.parseUnits('100', 'gwei'); // Use higher priority for speed
+        
         gasConfig = {
-          gasLimit: 800000, // Ultra high gas limit
-          gasPrice: ethers.parseUnits('3000', 'gwei'), // Above Chiliz minimum of 2,501 gwei
+          gasLimit: 800000,
+          maxFeePerGas: ethers.parseUnits('4000', 'gwei'), // High max fee
+          maxPriorityFeePerGas: chilizMinPriorityFee, // Priority tip
         };
         
-        // Try to get current gas price but ensure we meet Chiliz minimum
+        // Try to get current network fees and adjust accordingly
         try {
           const feeData = await this.provider.getFeeData();
-          if (feeData.gasPrice) {
-            // Use 400% of current gas price for ultra priority
-            const ultraHighPriorityGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
-            // Ensure minimum 2,501 gwei as per Chiliz docs
-            const chilizMinGasPrice = ethers.parseUnits('2501', 'gwei');
-            gasConfig.gasPrice = ultraHighPriorityGasPrice > chilizMinGasPrice ? ultraHighPriorityGasPrice : chilizMinGasPrice;
-            console.log("🚀 [EthersService] CHILIZ COMPLIANT gas price:", ethers.formatUnits(gasConfig.gasPrice, 'gwei'), "gwei");
+          if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+            // Use EIP-1559 if available
+            const highMaxFee = (feeData.maxFeePerGas * BigInt(300)) / BigInt(100);
+            const highPriorityFee = (feeData.maxPriorityFeePerGas * BigInt(500)) / BigInt(100);
+            
+            gasConfig.maxFeePerGas = highMaxFee > chilizMinGasFee ? highMaxFee : chilizMinGasFee;
+            gasConfig.maxPriorityFeePerGas = highPriorityFee > chilizMinPriorityFee ? highPriorityFee : chilizMinPriorityFee;
+            
+            console.log("🚀 [EthersService] EIP-1559 Chiliz fees:", {
+              maxFeePerGas: ethers.formatUnits(gasConfig.maxFeePerGas, 'gwei') + ' gwei',
+              maxPriorityFeePerGas: ethers.formatUnits(gasConfig.maxPriorityFeePerGas, 'gwei') + ' gwei'
+            });
+          } else if (feeData.gasPrice) {
+            // Fallback to legacy if EIP-1559 not available
+            const highGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
+            gasConfig = {
+              gasLimit: 800000,
+              gasPrice: highGasPrice > chilizMinGasFee ? highGasPrice : chilizMinGasFee
+            };
+            console.log("🚀 [EthersService] Legacy Chiliz gas:", ethers.formatUnits(gasConfig.gasPrice, 'gwei'), "gwei");
           }
         } catch (feeError) {
-          console.warn("⚠️ [EthersService] Could not get current gas price, using Chiliz minimum");
+          console.warn("⚠️ [EthersService] Using Chiliz default EIP-1559 fees");
         }
       } else {
         console.log("🔄 [EthersService] Using standard gas settings...");
@@ -277,23 +294,40 @@ export class EthersService {
     }
 
     try {
-      // Use CHILIZ COMPLIANT gas for proposal creation - minimum 2,501 gwei
+      // Use CHILIZ EIP-1559 COMPLIANT fees for proposals
+      const chilizMinGasFee = ethers.parseUnits('2501', 'gwei');
+      const chilizMinPriorityFee = ethers.parseUnits('100', 'gwei');
+      
       let gasConfig = {
-        gasLimit: 500000, // Ultra high gas limit for proposals
-        gasPrice: ethers.parseUnits('2800', 'gwei'), // Above Chiliz minimum
+        gasLimit: 500000,
+        maxFeePerGas: ethers.parseUnits('3500', 'gwei'),
+        maxPriorityFeePerGas: chilizMinPriorityFee,
       };
 
-      // Get dynamic gas price but ensure we meet Chiliz minimum
+      // Get dynamic network fees for proposals
       try {
         const feeData = await this.provider.getFeeData();
-        if (feeData.gasPrice) {
-          const ultraHighProposalGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
-          const chilizMinGasPrice = ethers.parseUnits('2501', 'gwei');
-          gasConfig.gasPrice = ultraHighProposalGasPrice > chilizMinGasPrice ? ultraHighProposalGasPrice : chilizMinGasPrice;
-          console.log("🚀 [EthersService] CHILIZ COMPLIANT proposal gas:", ethers.formatUnits(gasConfig.gasPrice, 'gwei'), "gwei");
+        if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+          const highMaxFee = (feeData.maxFeePerGas * BigInt(300)) / BigInt(100);
+          const highPriorityFee = (feeData.maxPriorityFeePerGas * BigInt(500)) / BigInt(100);
+          
+          gasConfig.maxFeePerGas = highMaxFee > chilizMinGasFee ? highMaxFee : chilizMinGasFee;
+          gasConfig.maxPriorityFeePerGas = highPriorityFee > chilizMinPriorityFee ? highPriorityFee : chilizMinPriorityFee;
+          
+          console.log("🚀 [EthersService] EIP-1559 proposal fees:", {
+            maxFeePerGas: ethers.formatUnits(gasConfig.maxFeePerGas, 'gwei') + ' gwei',
+            maxPriorityFeePerGas: ethers.formatUnits(gasConfig.maxPriorityFeePerGas, 'gwei') + ' gwei'
+          });
+        } else if (feeData.gasPrice) {
+          const highGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
+          gasConfig = {
+            gasLimit: 500000,
+            gasPrice: highGasPrice > chilizMinGasFee ? highGasPrice : chilizMinGasFee
+          } as any;
+          console.log("🚀 [EthersService] Legacy proposal gas:", ethers.formatUnits((gasConfig as any).gasPrice, 'gwei'), "gwei");
         }
       } catch (feeError) {
-        console.warn("⚠️ [EthersService] Using Chiliz minimum proposal gas");
+        console.warn("⚠️ [EthersService] Using Chiliz default proposal fees");
       }
 
       const tx = await this.governorContract.proposeDesignApproval(
@@ -339,24 +373,42 @@ export class EthersService {
     try {
       const supportValue = support ? 1 : 0; // 0 = Against, 1 = For, 2 = Abstain
       
-      // Use CHILIZ COMPLIANT gas for voting - minimum 2,501 gwei
+      // Use CHILIZ EIP-1559 COMPLIANT fees for voting
+      const chilizMinGasFee = ethers.parseUnits('2501', 'gwei');
+      const chilizMinPriorityFee = ethers.parseUnits('100', 'gwei');
+      
       let gasConfig = {
-        gasLimit: 400000, // Ultra high gas limit for voting
-        gasPrice: ethers.parseUnits('2800', 'gwei'), // Above Chiliz minimum
+        gasLimit: 400000,
+        maxFeePerGas: ethers.parseUnits('3500', 'gwei'),
+        maxPriorityFeePerGas: chilizMinPriorityFee,
       };
 
-      // Get dynamic gas price but ensure we meet Chiliz minimum
-      try {
-        const feeData = await this.provider.getFeeData();
-        if (feeData.gasPrice) {
-          const ultraHighVotingGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
-          const chilizMinGasPrice = ethers.parseUnits('2501', 'gwei');
-          gasConfig.gasPrice = ultraHighVotingGasPrice > chilizMinGasPrice ? ultraHighVotingGasPrice : chilizMinGasPrice;
-          console.log("🚀 [EthersService] CHILIZ COMPLIANT voting gas:", ethers.formatUnits(gasConfig.gasPrice, 'gwei'), "gwei");
-        }
-      } catch (feeError) {
-        console.warn("⚠️ [EthersService] Using Chiliz minimum voting gas");
-      }
+             // Get dynamic network fees for voting
+       try {
+         const feeData = await this.provider.getFeeData();
+         if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+           const highMaxFee = (feeData.maxFeePerGas * BigInt(300)) / BigInt(100);
+           const highPriorityFee = (feeData.maxPriorityFeePerGas * BigInt(500)) / BigInt(100);
+           
+           gasConfig.maxFeePerGas = highMaxFee > chilizMinGasFee ? highMaxFee : chilizMinGasFee;
+           gasConfig.maxPriorityFeePerGas = highPriorityFee > chilizMinPriorityFee ? highPriorityFee : chilizMinPriorityFee;
+           
+           console.log("🚀 [EthersService] EIP-1559 voting fees:", {
+             maxFeePerGas: ethers.formatUnits(gasConfig.maxFeePerGas, 'gwei') + ' gwei',
+             maxPriorityFeePerGas: ethers.formatUnits(gasConfig.maxPriorityFeePerGas, 'gwei') + ' gwei'
+           });
+         } else if (feeData.gasPrice) {
+           const highGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
+           // Use legacy gas config instead
+           gasConfig = {
+             gasLimit: 400000,
+             gasPrice: highGasPrice > chilizMinGasFee ? highGasPrice : chilizMinGasFee
+           } as any;
+           console.log("🚀 [EthersService] Legacy voting gas:", ethers.formatUnits((gasConfig as any).gasPrice, 'gwei'), "gwei");
+         }
+       } catch (feeError) {
+         console.warn("⚠️ [EthersService] Using Chiliz default voting fees");
+       }
       
       let tx;
       if (reason) {
