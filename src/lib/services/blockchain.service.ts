@@ -55,7 +55,8 @@ class BlockchainService {
   async mintDesignCandidate(
     designerAddress: string,
     designName: string,
-    ipfsMetadataUrl: string
+    ipfsMetadataUrl: string,
+    highPriority: boolean = false
   ): Promise<{ tokenId: number; transactionHash: string }> {
     if (!this.isInitialized) {
       throw new Error('Blockchain service not initialized');
@@ -71,7 +72,8 @@ class BlockchainService {
       const result = await this.ethersService.mintDesign(
         designerAddress,
         designName,
-        ipfsMetadataUrl
+        ipfsMetadataUrl,
+        highPriority
       );
 
       console.log('✅ [Blockchain] Design NFT minted:', {

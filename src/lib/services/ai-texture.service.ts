@@ -42,6 +42,7 @@ export interface SaveDesignAPIRequest {
   style: string;
   kitType: string;
   userAddress?: string;
+  mintAsNFT?: boolean; // Add flag to mint as NFT candidate
 }
 
 export class AITextureService {
@@ -390,7 +391,8 @@ export const useAITexture = () => {
         prompt: texture.metadata.prompt,
         style: texture.metadata.style,
         kitType: texture.metadata.kitType,
-        userAddress: request.userAddress
+        userAddress: request.userAddress,
+        mintAsNFT: true // Set default to true for minting
       };
       console.log('✅ [HOOK] API request constructed');
 
