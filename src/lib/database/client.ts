@@ -201,7 +201,7 @@ export const db = (() => {
     return createDatabaseClient();
   } catch (error) {
     // During build time, return a mock client to prevent build failures
-    if (process.env.NODE_ENV === 'production' || process.env.NEXT_PHASE === 'phase-production-build') {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
       console.warn('Database client not available during build - using mock');
       return null as any;
     }

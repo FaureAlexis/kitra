@@ -83,9 +83,9 @@ export class EthersService {
       
       if (highPriority) {
         console.log("🚀 [EthersService] Using ULTRA HIGH priority gas settings...");
-        // CHILIZ EIP-1559 COMPLIANT fees - minimum gas 2,501 gwei, priority 1 gwei
+        // CHILIZ EIP-1559 COMPLIANT fees with ULTRA HIGH priority
         const chilizMinGasFee = ethers.parseUnits('2501', 'gwei');
-        const chilizMinPriorityFee = ethers.parseUnits('100', 'gwei'); // Use higher priority for speed
+        const chilizMinPriorityFee = ethers.parseUnits('500', 'gwei'); // ULTRA HIGH priority for maximum speed
         
         gasConfig = {
           gasLimit: 800000,
@@ -294,9 +294,9 @@ export class EthersService {
     }
 
     try {
-      // Use CHILIZ EIP-1559 COMPLIANT fees for proposals
+      // Use CHILIZ EIP-1559 COMPLIANT fees for proposals with ULTRA HIGH priority
       const chilizMinGasFee = ethers.parseUnits('2501', 'gwei');
-      const chilizMinPriorityFee = ethers.parseUnits('100', 'gwei');
+      const chilizMinPriorityFee = ethers.parseUnits('500', 'gwei');
       
       let gasConfig = {
         gasLimit: 500000,
@@ -373,9 +373,9 @@ export class EthersService {
     try {
       const supportValue = support ? 1 : 0; // 0 = Against, 1 = For, 2 = Abstain
       
-      // Use CHILIZ EIP-1559 COMPLIANT fees for voting
+      // Use CHILIZ EIP-1559 COMPLIANT fees for voting with ULTRA HIGH priority
       const chilizMinGasFee = ethers.parseUnits('2501', 'gwei');
-      const chilizMinPriorityFee = ethers.parseUnits('100', 'gwei');
+      const chilizMinPriorityFee = ethers.parseUnits('500', 'gwei');
       
       let gasConfig = {
         gasLimit: 400000,
