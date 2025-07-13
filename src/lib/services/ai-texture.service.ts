@@ -51,7 +51,7 @@ export class AITextureService {
 
   private constructor() {
     this.baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://your-domain.com/api' 
+      ? 'https://kitra.vercel.app/api' 
       : '/api';
   }
 
