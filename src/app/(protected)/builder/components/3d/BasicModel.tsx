@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useControls } from 'leva';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { textureLoader } from '../../../../../lib/texture-loader';
@@ -16,9 +15,9 @@ interface BasicModelProps {
 }
 
 export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
-  primaryColor: propPrimaryColor,
-  secondaryColor: propSecondaryColor,
-  pattern: propPattern,
+  primaryColor = '#ec4899',
+  secondaryColor = '#ffffff',
+  pattern = 'solid',
   textureUrl,
   textureId
 }) {
@@ -27,27 +26,11 @@ export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
   const [appliedTexture, setAppliedTexture] = useState<THREE.Texture | null>(null);
   const { getTexture } = useTextureStorage();
   
-  // Leva controls for customization
-  const { 
-    scale, 
-    rotationY, 
-    positionY,
-    primaryColor, 
-    secondaryColor,
-    patternType,
-    useTexture
-  } = useControls('Model Controls', {
-    scale: { value: 1, min: 0.5, max: 2, step: 0.1 },
-    rotationY: { value: 0, min: -Math.PI, max: Math.PI, step: 0.1 },
-    positionY: { value: 0, min: -2, max: 2, step: 0.1 },
-    primaryColor: propPrimaryColor || '#ec4899',
-    secondaryColor: propSecondaryColor || '#ffffff',
-    patternType: { value: propPattern || 'solid', options: ['solid', 'stripes', 'gradient'] },
-    useTexture: !!textureId
-  });
-
-  // Auto-enable texture when textureId is provided
-  const shouldUseTexture = textureId ? true : useTexture;
+  // Fixed model properties (no more Leva controls)
+  const scale = 1;
+  const rotationY = 0;
+  const positionY = 0;
+  const shouldUseTexture = !!textureId;
 
   // Load and apply texture when textureId changes
   useEffect(() => {
@@ -139,7 +122,7 @@ export const BasicModel = React.memo<BasicModelProps>(function BasicModel({
       </mesh>
       
       {/* Pattern overlays based on selection */}
-      {patternType === 'stripes' && !shouldUseTexture && (
+      {pattern === 'stripes' && !shouldUseTexture && (
         <>
           <mesh position={[0, 0.5, 0.05]}>
             <boxGeometry args={[2, 0.3, 0.01]} />

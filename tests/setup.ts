@@ -53,9 +53,7 @@ vi.mock('@react-three/drei', () => ({
   Center: ({ children }: { children: React.ReactNode }) => <div data-testid="center">{children}</div>,
 }));
 
-vi.mock('leva', () => ({
-  useControls: vi.fn(() => ({})),
-}));
+
 
 // runs a cleanup after each test case
 afterEach(() => {

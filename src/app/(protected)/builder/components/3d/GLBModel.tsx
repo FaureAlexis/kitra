@@ -2,7 +2,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
-import { useControls } from 'leva';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { textureLoader } from '../../../../../lib/texture-loader';
@@ -19,9 +18,9 @@ interface GLBModelProps {
 
 export const GLBModel = React.memo(function GLBModel({ 
   modelPath,
-  primaryColor: propPrimaryColor,
-  secondaryColor: propSecondaryColor,
-  pattern: propPattern,
+  primaryColor = '#ec4899',
+  secondaryColor = '#ffffff',
+  pattern = 'solid',
   textureUrl,
   textureId
 }: GLBModelProps) {
@@ -33,25 +32,11 @@ export const GLBModel = React.memo(function GLBModel({
   
   const gltf = useGLTF(modelPath, true);
   
-  // Leva controls for customization
-  const { 
-    scale, 
-    rotationY, 
-    positionY,
-    primaryColor, 
-    secondaryColor,
-    useTexture
-  } = useControls('Model Controls', {
-    scale: { value: 1, min: 0.5, max: 2, step: 0.1 },
-    rotationY: { value: 0, min: -Math.PI, max: Math.PI, step: 0.1 },
-    positionY: { value: 0, min: -2, max: 2, step: 0.1 },
-    primaryColor: propPrimaryColor || '#ec4899',
-    secondaryColor: propSecondaryColor || '#ffffff',
-    useTexture: !!textureId
-  });
-
-  // Auto-enable texture when textureId is provided
-  const shouldUseTexture = textureId ? true : useTexture;
+  // Fixed model properties (no more Leva controls)
+  const scale = 1;
+  const rotationY = 0;
+  const positionY = 0;
+  const shouldUseTexture = !!textureId;
 
   // Store original materials when GLB loads
   useEffect(() => {

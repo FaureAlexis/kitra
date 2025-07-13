@@ -9,7 +9,6 @@ import { ColorControlsPanel } from '../ui/ColorControlsPanel';
 import { AIAssistantPanel } from '../ui/AIAssistantPanel';
 import { KitStatusPanel } from '../ui/KitStatusPanel';
 import { ActionsBar } from '../ui/ActionsBar';
-import { LevaControls } from '../ui/LevaControls';
 import { SafeCanvas } from '../3d/SafeCanvas';
 import { Scene } from '../3d/Scene';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -30,7 +29,6 @@ export const BuilderLayout = React.memo(function BuilderLayout({
   const loadDesignId = searchParams.get('load');
   
   const [showControls, setShowControls] = useState(true);
-  const [showLeva, setShowLeva] = useState(false);
   const [primaryColor, setPrimaryColor] = useState('#ec4899');
   const [secondaryColor, setSecondaryColor] = useState('#ffffff');
   const [pattern, setPattern] = useState('solid');
@@ -49,8 +47,7 @@ export const BuilderLayout = React.memo(function BuilderLayout({
   const { textures } = useAITexture();
   
   useKeyboardShortcuts({
-    onToggleControls: () => setShowControls(prev => !prev),
-    onToggleLeva: () => setShowLeva(prev => !prev)
+    onToggleControls: () => setShowControls(prev => !prev)
   });
   
   useModelLoader({ modelPath });
@@ -203,9 +200,6 @@ export const BuilderLayout = React.memo(function BuilderLayout({
 
       {/* Actions Bar */}
       <ActionsBar currentTextureId={currentTextureId} />
-
-      {/* Leva Controls */}
-      <LevaControls showLeva={showLeva} />
     </div>
   );
 }); 

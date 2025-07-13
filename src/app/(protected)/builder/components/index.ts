@@ -15,7 +15,6 @@ export { GlassButton } from './ui/GlassButton';
 export { ColorControlsPanel } from './ui/ColorControlsPanel';
 export { AIAssistantPanel } from './ui/AIAssistantPanel';
 export { ActionsBar } from './ui/ActionsBar';
-export { LevaControls } from './ui/LevaControls';
 
 // Layout Components
 export { ControlsPanels } from './layout/ControlsPanels';
