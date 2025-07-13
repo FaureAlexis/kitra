@@ -87,24 +87,30 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
           </div>
 
           {/* Quick Actions */}
-          <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-8 h-8 p-0 bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white shadow-sm"
-              onClick={() => onFavorite?.(design.id)}
-            >
-              <Heart className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-8 h-8 p-0 bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white shadow-sm"
-              onClick={() => onShare?.(design.id)}
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
+          {(onFavorite || onShare) && (
+            <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              {onFavorite && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-8 h-8 p-0 bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white shadow-sm"
+                  onClick={() => onFavorite(design.id)}
+                >
+                  <Heart className="h-4 w-4" />
+                </Button>
+              )}
+              {onShare && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-8 h-8 p-0 bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white shadow-sm"
+                  onClick={() => onShare(design.id)}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Bottom Caption Overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -163,24 +169,30 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
         </div>
 
         {/* Quick Actions */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-8 h-8 p-0 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
-            onClick={() => onFavorite?.(design.id)}
-          >
-            <Heart className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-8 h-8 p-0 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
-            onClick={() => onShare?.(design.id)}
-          >
-            <Share2 className="h-4 w-4" />
-          </Button>
-        </div>
+        {(onFavorite || onShare) && (
+          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {onFavorite && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-8 h-8 p-0 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+                onClick={() => onFavorite(design.id)}
+              >
+                <Heart className="h-4 w-4" />
+              </Button>
+            )}
+            {onShare && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-8 h-8 p-0 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+                onClick={() => onShare(design.id)}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* View Count */}
         <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

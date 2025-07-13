@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,11 +12,17 @@ import { useWalletData } from '@/hooks/useWalletData';
 import { useDesigns } from '@/hooks/useDesigns';
 import { appKit } from '@/lib/web3-config';
 import { toast } from 'sonner';
-import { JerseyCardSkeleton } from '@/components/gallery/JerseyCard';
+import { JerseyCard, JerseyCardSkeleton } from '@/components/gallery/JerseyCard';
 
 export default function MyDesignsPage() {
   const walletData = useWalletData();
   const [currentStatus, setCurrentStatus] = useState<'all' | 'published' | 'candidate' | 'draft'>('all');
+
+  // Grid system states (same as gallery)
+  const [columns, setColumns] = useState(3);
+  const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const {
     designs,
@@ -30,6 +36,43 @@ export default function MyDesignsPage() {
     status: currentStatus === 'all' ? undefined : currentStatus,
     creator: walletData.address || undefined // Filter by current user
   });
+
+  // Responsive columns based on screen width (same as gallery)
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth;
+      if (width < 768) {
+        setColumns(1);
+      } else if (width < 1024) {
+        setColumns(2);
+      } else if (width < 1280) {
+        setColumns(3);
+      } else {
+        setColumns(4);
+      }
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
+
+  // Intersection Observer for staggered animations (same as gallery)
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(entry.target.getAttribute('data-index') || '0');
+            setVisibleItems(prev => new Set([...prev, index]));
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    return () => observerRef.current?.disconnect();
+  }, []);
 
   const handleStatusFilter = (status: 'all' | 'published' | 'candidate' | 'draft') => {
     console.log('🔄 [MyDesigns] Status filter changed:', status);
@@ -93,6 +136,78 @@ export default function MyDesignsPage() {
   // Filter designs by current user
   const userDesigns = designs.filter(design =>
     walletData.address && design.creator.toLowerCase() === walletData.address.toLowerCase()
+  );
+
+  // Distribute items into columns for masonry layout (same as gallery)
+  const distributeItems = () => {
+    const columnArrays: typeof userDesigns[] = Array.from({ length: columns }, () => []);
+
+    userDesigns.forEach((design, index) => {
+      const columnIndex = index % columns;
+      columnArrays[columnIndex].push(design);
+    });
+
+    return columnArrays;
+  };
+
+  const columnArrays = distributeItems();
+
+  // Observe items when they mount (same as gallery)
+  useEffect(() => {
+    itemRefs.current.forEach((ref, index) => {
+      if (ref && observerRef.current) {
+        ref.setAttribute('data-index', index.toString());
+        observerRef.current.observe(ref);
+      }
+    });
+  }, [userDesigns]);
+
+  // Action handlers for JerseyCard
+  const handleVote = (id: string) => {
+    console.log('🗳️ [MyDesigns] Vote for design:', id);
+    toast.info('Cannot vote on your own design!', {
+      description: 'You can only vote on designs created by other users.'
+    });
+  };
+
+  const handleShare = (id: string) => {
+    console.log('📤 [MyDesigns] Share design:', id);
+    const shareUrl = `${window.location.origin}/design/${id}`;
+    navigator.clipboard.writeText(shareUrl);
+    toast.success('Link copied!', {
+      description: 'Design link has been copied to clipboard.'
+    });
+  };
+
+  const handleFavorite = (id: string) => {
+    console.log('❤️ [MyDesigns] Favorite design:', id);
+    toast.success('Added to favorites!', {
+      description: 'Design has been added to your favorites.'
+    });
+  };
+
+  // Loading skeletons (same as gallery)
+  const LoadingSkeleton = () => (
+    <div
+      className="masonry-grid"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        gap: '10px'
+      }}
+    >
+      {Array.from({ length: columns }).map((_, columnIndex) => (
+        <div key={columnIndex} className="masonry-column space-y-[10px]">
+          {Array.from({ length: Math.ceil(12 / columns) }).map((_, i) => (
+            <JerseyCardSkeleton
+              key={i}
+              isPinterestStyle={true}
+              className="animate-pulse"
+            />
+          ))}
+        </div>
+      ))}
+    </div>
   );
 
   if (!walletData.isConnected) {
@@ -254,164 +369,136 @@ export default function MyDesignsPage() {
 
         {/* Loading State */}
         {loading && userDesigns.length === 0 && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <JerseyCardSkeleton key={i} isPinterestStyle={false} />
-            ))}
-          </div>
+          <LoadingSkeleton />
         )}
 
-        {/* Designs Grid */}
+                {/* Pinterest-style Masonry Grid */}
         {userDesigns.length > 0 && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {userDesigns.map((design) => (
-              <Card key={design.id} className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
-                {/* Background Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95 backdrop-blur-sm" />
+          <div className="space-y-8">
+            <div
+              className="masonry-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                gap: '10px'
+              }}
+            >
+              {columnArrays.map((columnItems, columnIndex) => (
+                <div key={columnIndex} className="masonry-column space-y-[10px]">
+                  {columnItems.map((design, itemIndex) => {
+                    const globalIndex = columnIndex + itemIndex * columns;
+                    const isVisible = visibleItems.has(globalIndex);
 
-                {/* Jersey Preview */}
-                <div className="relative aspect-square overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 flex items-center justify-center">
-                    <div className="relative transform group-hover:scale-105 transition-transform duration-500">
-                      <img
-                        src={design.ipfsUrl}
-                        alt={design.name}
-                        className="w-48 h-56 object-cover rounded-lg shadow-2xl"
-                        onError={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI0MCIgdmlld0JveD0iMCAwIDIwMCAyNDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjQwIiBmaWxsPSIjRjNGNEY2Ii8+CjxyZWN0IHg9IjIwIiB5PSIyMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIyMDAiIHJ4PSIxMiIgZmlsbD0iI0U1RTdFQiIvPgo8dGV4dCB4PSIxMDAiIHk9IjEyNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzZCNzI4MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDgiPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+CnRleHQge2ZvbnQtZmFtaWx5OiBzYW5zLXNlcmlmO30KPC9zdHlsZT7wn5GPPC90ZXh0Pgo8L3N2Zz4K';
+                    return (
+                      <div
+                        key={design.id}
+                        ref={(el) => {
+                          itemRefs.current[globalIndex] = el;
                         }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="absolute top-4 left-4">
-                    <Badge className={`${getStatusColor(design.status)} border text-xs font-medium`}>
-                      {design.status}
-                    </Badge>
-                  </div>
-
-                  {/* Actions Menu */}
-                  <div className="absolute top-4 right-4">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-8 h-8 p-0 bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-all duration-300"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-background/95 backdrop-blur-sm border-border/50">
-                        <DropdownMenuItem onClick={() => handleEdit(design.id)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDuplicate(design.id, design.name)}>
-                          <Copy className="h-4 w-4 mr-2" />
-                          Duplicate
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/design/${design.id}`}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </Link>
-                        </DropdownMenuItem>
-                        {design.status === 'draft' && (
-                          <DropdownMenuItem onClick={() => handlePublish(design.id, design.name)}>
-                            <Badge className="h-4 w-4 mr-2" />
-                            Publish
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(design.id, design.name)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                        className={`
+                          pinterest-item transform transition-all duration-500 ease-out
+                          ${isVisible
+                            ? 'opacity-100 translate-y-0'
+                            : 'opacity-0 translate-y-4'
+                          }
+                        `}
+                        style={{
+                          transitionDelay: `${globalIndex * 50}ms`
+                        }}
+                      >
+                        <div className="relative group">
+                          <JerseyCard
+                            design={design}
+                            onVote={handleVote}
+                            onShare={undefined} // Remove share button since we have it in dropdown
+                            onFavorite={undefined} // Remove favorite button since it's not useful for own designs
+                            isPinterestStyle={true}
+                          />
+                          {/* Owner Actions Overlay */}
+                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-8 h-8 p-0 bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white shadow-sm"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-background/95 backdrop-blur-sm border-border/50">
+                                <DropdownMenuItem onClick={() => handleEdit(design.id)}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDuplicate(design.id, design.name)}>
+                                  <Copy className="h-4 w-4 mr-2" />
+                                  Duplicate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/design/${design.id}`}>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Details
+                                  </Link>
+                                </DropdownMenuItem>
+                                {design.status === 'draft' && (
+                                  <DropdownMenuItem onClick={() => handlePublish(design.id, design.name)}>
+                                    <Badge className="h-4 w-4 mr-2" />
+                                    Publish
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem
+                                  onClick={() => handleDelete(design.id, design.name)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+              ))}
+            </div>
 
-                {/* Content */}
-                <CardContent className="relative p-6 space-y-4">
-                  {/* Title */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-                      {design.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {design.description}
-                    </p>
-                  </div>
+            {/* Load More */}
+            {hasMore && (
+              <div className="text-center px-4">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="px-8 py-6 text-lg bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-white hover:border-primary/50 transition-all duration-300 shadow-sm"
+                  onClick={loadMore}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
+                      Loading more designs...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-5 w-5 mr-3" />
+                      Load More Designs
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
 
-                  {/* Creator & Date */}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                        <span className="text-xs font-bold text-primary-foreground">
-                          {formatCreator(design.creator).slice(0, 1)}
-                        </span>
-                      </div>
-                      <span className="text-muted-foreground">You</span>
-                    </div>
-                    <span className="text-muted-foreground">{formatDate(design.createdAt)}</span>
-                  </div>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1">
-                    {design.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs bg-muted/50">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {design.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs bg-muted/50">
-                        +{design.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 text-sm">
-                        <span className="text-primary">🗳️</span>
-                        <span className="font-medium">{design.votes}</span>
-                        <span className="text-muted-foreground">votes</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 px-3 text-xs bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80 hover:border-primary/50 transition-all duration-300"
-                        onClick={() => handleEdit(design.id)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 px-3 text-xs bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80 hover:border-primary/50 transition-all duration-300"
-                        asChild
-                      >
-                        <Link href={`/design/${design.id}`}>
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {/* Load More Indicator */}
+            {loading && userDesigns.length > 0 && (
+              <div className="text-center px-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-sm shadow-sm">
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Loading more designs...</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -518,30 +605,7 @@ export default function MyDesignsPage() {
           </div>
         )}
 
-        {/* Load More */}
-        {hasMore && userDesigns.length > 0 && (
-          <div className="text-center mb-16">
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-8 py-6 text-lg bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80 hover:border-primary/50 transition-all duration-300 shadow-sm"
-              onClick={loadMore}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="h-5 w-5 mr-3 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-5 w-5 mr-3" />
-                  Load More Designs
-                </>
-              )}
-            </Button>
-          </div>
-        )}
+
       </div>
     </div>
   );
