@@ -63,8 +63,8 @@ export const KitStatusPanel = React.memo<KitStatusPanelProps>(function KitStatus
 
   const getBackgroundName = (url: string | null | undefined) => {
     if (!url) return 'Default Scene';
-    if (url.includes('/backgrounds/lab.png')) return 'Laboratory';
-    if (url.includes('/backgrounds/stadium.png')) return 'Stadium';
+    if (url.includes('/backgrounds/lab.webp')) return 'Laboratory';
+    if (url.includes('/backgrounds/stadium.webp')) return 'Stadium';
     if (url.includes('557804506')) return 'Stadium View';
     if (url.includes('551698618')) return 'Football Field';
     if (url.includes('577223625')) return 'Training Ground';

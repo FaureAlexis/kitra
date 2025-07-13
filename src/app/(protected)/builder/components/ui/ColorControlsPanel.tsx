@@ -27,8 +27,8 @@ const patternOptions = [
 
 const backgroundOptions = [
   { value: '', label: 'No Background' },
-  { value: '/backgrounds/lab.png', label: 'Laboratory' },
-  { value: '/backgrounds/stadium.png', label: 'Stadium' },
+  { value: '/backgrounds/lab.webp', label: 'Laboratory' },
+  { value: '/backgrounds/stadium.webp', label: 'Stadium' },
 ];
 
 export const ColorControlsPanel = React.memo(function ColorControlsPanel({
