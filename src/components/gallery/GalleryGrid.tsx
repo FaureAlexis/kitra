@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { JerseyCard } from './JerseyCard';
+import { JerseyCard, JerseyCardSkeleton } from './JerseyCard';
 import { DesignListItem } from '@/app/api/designs/route';
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Plus } from 'lucide-react';
@@ -104,22 +104,12 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
     >
       {Array.from({ length: columns }).map((_, columnIndex) => (
         <div key={columnIndex} className="masonry-column space-y-[10px]">
-          {Array.from({ length: Math.ceil(6 / columns) }).map((_, i) => (
-            <div
+          {Array.from({ length: Math.ceil(12 / columns) }).map((_, i) => (
+            <JerseyCardSkeleton
               key={i}
+              isPinterestStyle={true}
               className="animate-pulse"
-            >
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow-sm">
-                <div
-                  className="bg-gray-200"
-                  style={{ height: `${200 + Math.random() * 200}px` }}
-                />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
-                </div>
-              </div>
-            </div>
+            />
           ))}
         </div>
       ))}

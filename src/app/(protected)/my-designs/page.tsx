@@ -12,19 +12,20 @@ import { useWalletData } from '@/hooks/useWalletData';
 import { useDesigns } from '@/hooks/useDesigns';
 import { appKit } from '@/lib/web3-config';
 import { toast } from 'sonner';
+import { JerseyCardSkeleton } from '@/components/gallery/JerseyCard';
 
 export default function MyDesignsPage() {
   const walletData = useWalletData();
   const [currentStatus, setCurrentStatus] = useState<'all' | 'published' | 'candidate' | 'draft'>('all');
 
-  const { 
-    designs, 
-    total, 
-    loading, 
-    error, 
-    hasMore, 
-    loadMore, 
-    refetchDesigns 
+  const {
+    designs,
+    total,
+    loading,
+    error,
+    hasMore,
+    loadMore,
+    refetchDesigns
   } = useDesigns({
     status: currentStatus === 'all' ? undefined : currentStatus,
     creator: walletData.address || undefined // Filter by current user
@@ -81,7 +82,7 @@ export default function MyDesignsPage() {
   };
 
   // Filter designs by current user
-  const userDesigns = designs.filter(design => 
+  const userDesigns = designs.filter(design =>
     walletData.address && design.creator.toLowerCase() === walletData.address.toLowerCase()
   );
 
@@ -120,9 +121,9 @@ export default function MyDesignsPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleRefresh}
                 disabled={loading}
               >
@@ -137,29 +138,29 @@ export default function MyDesignsPage() {
 
           {/* Status Filter Bar */}
           <div className="flex gap-2">
-            <Button 
-              variant={currentStatus === 'all' ? 'default' : 'outline'} 
+            <Button
+              variant={currentStatus === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('all')}
             >
               All ({userDesigns.length})
             </Button>
-            <Button 
-              variant={currentStatus === 'draft' ? 'default' : 'outline'} 
+            <Button
+              variant={currentStatus === 'draft' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('draft')}
             >
               Drafts ({userDesigns.filter(d => d.status === 'draft').length})
             </Button>
-            <Button 
-              variant={currentStatus === 'candidate' ? 'default' : 'outline'} 
+            <Button
+              variant={currentStatus === 'candidate' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('candidate')}
             >
               In Voting ({userDesigns.filter(d => d.status === 'candidate').length})
             </Button>
-            <Button 
-              variant={currentStatus === 'published' ? 'default' : 'outline'} 
+            <Button
+              variant={currentStatus === 'published' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('published')}
             >
@@ -173,9 +174,9 @@ export default function MyDesignsPage() {
           <div className="mb-8 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-destructive" />
             <span className="text-destructive">Error loading designs: {error}</span>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleRefresh}
               className="ml-auto"
             >
@@ -188,20 +189,7 @@ export default function MyDesignsPage() {
         {loading && userDesigns.length === 0 && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="border-0 shadow-lg overflow-hidden">
-                <Skeleton className="aspect-square w-full" />
-                <CardHeader className="pb-3">
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                </CardHeader>
-                <CardContent className="pt-0 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
-                  <Skeleton className="h-8 w-full" />
-                </CardContent>
-              </Card>
+              <JerseyCardSkeleton key={i} isPinterestStyle={false} />
             ))}
           </div>
         )}
@@ -214,8 +202,8 @@ export default function MyDesignsPage() {
                 <div className="aspect-square bg-gradient-to-br from-muted/30 to-muted/60 flex items-center justify-center relative overflow-hidden">
                   {/* IPFS Image */}
                   <div className="w-full h-full flex items-center justify-center">
-                    <img 
-                      src={design.ipfsUrl} 
+                    <img
+                      src={design.ipfsUrl}
                       alt={design.name}
                       className="w-48 h-56 object-cover rounded-lg shadow-lg group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
@@ -257,7 +245,7 @@ export default function MyDesignsPage() {
                             Publish
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDelete(design.id, design.name)}
                           className="text-destructive focus:text-destructive"
                         >
@@ -268,7 +256,7 @@ export default function MyDesignsPage() {
                     </DropdownMenu>
                   </div>
                 </div>
-                
+
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg group-hover:text-primary transition-colors">
                     {design.name}
@@ -277,7 +265,7 @@ export default function MyDesignsPage() {
                     {design.description}
                   </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent className="pt-0 space-y-4">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
@@ -288,12 +276,12 @@ export default function MyDesignsPage() {
                       <span className="font-medium">{design.votes}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span className="capitalize">{design.kitType} kit</span>
                     <span className="capitalize">{design.style} style</span>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-1">
                     {design.tags.slice(0, 3).map((tag) => (
                       <Badge key={tag} variant="outline" className="text-xs">
@@ -306,7 +294,7 @@ export default function MyDesignsPage() {
                       </Badge>
                     )}
                   </div>
-                  
+
                   <div className="flex gap-2 pt-2">
                     <Button size="sm" className="flex-1" onClick={() => handleEdit(design.id)}>
                       <Edit className="h-4 w-4 mr-1" />
@@ -331,8 +319,8 @@ export default function MyDesignsPage() {
             <div className="text-6xl mb-4">🎨</div>
             <h3 className="text-2xl font-semibold mb-2">No designs yet</h3>
             <p className="text-muted-foreground mb-6">
-              {currentStatus === 'all' 
-                ? 'You haven\'t created any designs yet. Start designing your first football kit!' 
+              {currentStatus === 'all'
+                ? 'You haven\'t created any designs yet. Start designing your first football kit!'
                 : `You don't have any ${currentStatus} designs yet.`}
             </p>
             <Button asChild>
@@ -344,9 +332,9 @@ export default function MyDesignsPage() {
         {/* Load More */}
         {hasMore && userDesigns.length > 0 && (
           <div className="text-center mb-16">
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               className="px-8"
               onClick={loadMore}
               disabled={loading}
@@ -365,4 +353,4 @@ export default function MyDesignsPage() {
       </div>
     </div>
   );
-} 
+}

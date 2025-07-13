@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Eye, Share2, ArrowRight } from 'lucide-react';
 import Link from "next/link";
 import { DesignListItem } from '@/app/api/designs/route';
@@ -255,6 +256,114 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
                 <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export const JerseyCardSkeleton: React.FC<{
+  isPinterestStyle?: boolean;
+  className?: string;
+}> = ({
+  isPinterestStyle = false,
+  className = ''
+}) => {
+  if (isPinterestStyle) {
+    return (
+      <div className={`group relative overflow-hidden bg-white rounded-lg shadow-sm ${className}`}>
+        {/* Main Image Skeleton */}
+        <div className="relative overflow-hidden">
+          <Skeleton
+            className="w-full h-auto"
+            style={{
+              aspectRatio: `${1 + Math.random() * 0.5}`,
+              minHeight: '200px',
+              maxHeight: '400px'
+            }}
+          />
+
+          {/* Top-left tags skeleton */}
+          <div className="absolute top-3 left-3">
+            <div className="flex flex-wrap gap-1">
+              <Skeleton className="h-5 w-12 rounded-full" />
+              <Skeleton className="h-5 w-10 rounded-full" />
+            </div>
+          </div>
+
+          {/* Top-right actions skeleton */}
+          <div className="absolute top-3 right-3 flex gap-2">
+            <Skeleton className="w-8 h-8 rounded-md" />
+            <Skeleton className="w-8 h-8 rounded-md" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Original bento-style skeleton
+  return (
+    <Card className={`group relative overflow-hidden border-0 shadow-lg ${className}`}>
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95 backdrop-blur-sm" />
+
+      {/* Jersey Preview Skeleton */}
+      <div className="relative aspect-square overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-muted/30 to-muted/60 flex items-center justify-center">
+          <Skeleton className="w-48 h-56 rounded-lg" />
+        </div>
+
+        {/* Status Badge Skeleton */}
+        <div className="absolute top-4 left-4">
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+
+        {/* Quick Actions Skeleton */}
+        <div className="absolute top-4 right-4 flex gap-2">
+          <Skeleton className="w-8 h-8 rounded-md" />
+          <Skeleton className="w-8 h-8 rounded-md" />
+        </div>
+
+        {/* View Count Skeleton */}
+        <div className="absolute bottom-4 left-4">
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+      </div>
+
+      {/* Content Skeleton */}
+      <CardContent className="relative p-6 space-y-4">
+        {/* Title */}
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+
+        {/* Creator & Date */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Skeleton className="w-6 h-6 rounded-full" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+          <Skeleton className="h-4 w-16" />
+        </div>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1">
+          <Skeleton className="h-5 w-12 rounded-full" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-10 rounded-full" />
+        </div>
+
+        {/* Votes & Actions */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-20" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-12 rounded-md" />
+            <Skeleton className="h-8 w-16 rounded-md" />
           </div>
         </div>
       </CardContent>

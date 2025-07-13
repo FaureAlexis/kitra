@@ -1,5 +1,5 @@
 // Gallery Components - Barrel Export
-export { JerseyCard } from './JerseyCard';
+export { JerseyCard, JerseyCardSkeleton } from './JerseyCard';
 export { GalleryFilters } from './GalleryFilters';
 export { GalleryHeader } from './GalleryHeader';
 export { GalleryGrid } from './GalleryGrid';
