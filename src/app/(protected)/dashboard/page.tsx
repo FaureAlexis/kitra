@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useWalletData, useUserStats, useUserDesigns, useVotingHistory } from "@/hooks/useWalletData";
 import Link from "next/link";
+import { Palette, Vote, Trophy, DollarSign, Rocket, Calendar, Eye, Edit, CheckCircle, X } from "lucide-react";
 
 function LoadingSkeleton() {
   return (
@@ -86,98 +87,84 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-            <span className="text-primary-foreground font-bold">📊</span>
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground/80 bg-clip-text text-transparent">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome back, {walletData.ensName || `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}`}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
 
-      {/* Wallet Status */}
-      <Card className="border-0 shadow-lg mb-8">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-green-50 dark:from-green-950 dark:to-green-900 flex items-center justify-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              </div>
+      <div className="max-w-7xl mx-auto p-6 relative">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground/80 bg-clip-text text-transparent">Dashboard</h1>
+              <p className="text-muted-foreground">
+                Welcome back, {walletData.ensName || `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}`}
+              </p>
+            </div>
+            <div className="flex items-center gap-4 justify-end text-right">
               <div>
                 <p className="text-sm text-muted-foreground">Wallet Connected</p>
-                <p className="font-mono text-sm">{walletData.address}</p>
+                <p className="text-sm font-medium">{walletData.formattedBalance}</p>
               </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Balance</p>
-              <p className="text-lg font-semibold">{walletData.formattedBalance}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* User Stats */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="border-0 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Designs Created</p>
-                <p className="text-2xl font-bold">{userStats?.designsCount || 0}</p>
+              {/* User Stats */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Designs Created</p>
+                  <p className="text-2xl font-bold">{userStats?.designsCount || 0}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                  <Palette className="w-6 h-6 text-primary" />
+                </div>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                <span className="text-2xl">🎨</span>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Votes Cast</p>
+                  <p className="text-2xl font-bold">{userStats?.votesCount || 0}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-blue-900 flex items-center justify-center">
+                  <Vote className="w-6 h-6 text-blue-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Votes Cast</p>
-                <p className="text-2xl font-bold">{userStats?.votesCount || 0}</p>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">NFTs Owned</p>
+                  <p className="text-2xl font-bold">{userStats?.tokensOwned || 0}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-950 dark:to-amber-900 flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-amber-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-blue-900 flex items-center justify-center">
-                <span className="text-2xl">🗳️</span>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Total Earnings</p>
+                  <p className="text-2xl font-bold">{userStats?.totalEarnings || "0 CHZ"}</p>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-950 dark:to-emerald-900 flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-emerald-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">NFTs Owned</p>
-                <p className="text-2xl font-bold">{userStats?.tokensOwned || 0}</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-950 dark:to-amber-900 flex items-center justify-center">
-                <span className="text-2xl">🏆</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Earnings</p>
-                <p className="text-2xl font-bold">{userStats?.totalEarnings || "0 CHZ"}</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-950 dark:to-emerald-900 flex items-center justify-center">
-                <span className="text-2xl">💰</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
       {/* Quick Actions */}
       <Card className="border-0 shadow-lg mb-8">
@@ -189,18 +176,18 @@ export default function DashboardPage() {
           <div className="flex flex-wrap gap-4">
             <Button size="lg" asChild>
               <Link href="/builder">
-                <span className="mr-2">🚀</span>
+                <Rocket className="w-4 h-4 mr-2" />
                 Create New Design
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
               <Link href="/gallery">
-                <span className="mr-2">🎨</span>
+                <Palette className="w-4 h-4 mr-2" />
                 Browse Gallery
               </Link>
             </Button>
             <Button size="lg" variant="outline">
-              <span className="mr-2">🗳️</span>
+              <Vote className="w-4 h-4 mr-2" />
               View Voting Queue
             </Button>
           </div>
@@ -238,15 +225,15 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <span>🗳️</span>
+                          <Vote className="w-4 h-4" />
                           {design.votes} votes
                         </span>
                         <span className="flex items-center gap-1">
-                          <span>💰</span>
+                          <DollarSign className="w-4 h-4" />
                           {design.earnings}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span>📅</span>
+                          <Calendar className="w-4 h-4" />
                           {design.createdAt}
                         </span>
                       </div>
@@ -266,7 +253,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🎨</span>
+                    <Palette className="w-8 h-8 text-primary" />
                   </div>
                   <p className="text-muted-foreground mb-4">No designs yet</p>
                   <Button asChild>
@@ -302,15 +289,15 @@ export default function DashboardPage() {
                         <span className={`flex items-center gap-1 ${
                           vote.vote === 'support' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                         }`}>
-                          {vote.vote === 'support' ? '✅' : '❌'}
+                          {vote.vote === 'support' ? <CheckCircle className="w-4 h-4" /> : <X className="w-4 h-4" />}
                           {vote.vote}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span>⚖️</span>
+                          <Vote className="w-4 h-4" />
                           {vote.weight} voting power
                         </span>
                         <span className="flex items-center gap-1">
-                          <span>📅</span>
+                          <Calendar className="w-4 h-4" />
                           {vote.date}
                         </span>
                       </div>
@@ -323,7 +310,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-blue-900 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🗳️</span>
+                    <Vote className="w-8 h-8 text-blue-600" />
                   </div>
                   <p className="text-muted-foreground mb-4">No votes cast yet</p>
                   <Button variant="outline" asChild>
@@ -335,41 +322,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* User Profile */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Your account information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-6 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center text-primary-foreground font-bold text-xl">
-              {walletData.ensName?.[0].toUpperCase() || walletData.address[2].toUpperCase()}
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg">{walletData.ensName || 'Anonymous'}</h3>
-              <p className="text-sm text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded mt-1 inline-block">
-                {walletData.address}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <Button variant="outline">
-              <span className="mr-2">✏️</span>
-              Edit Profile
-            </Button>
-            <Button variant="outline">
-              <span className="mr-2">👁️</span>
-              View Public Profile
-            </Button>
-            <Button variant="outline">
-              <span className="mr-2">⚙️</span>
-              Settings
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    </div>
     </div>
   );
 }
