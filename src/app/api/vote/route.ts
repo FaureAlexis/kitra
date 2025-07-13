@@ -390,30 +390,128 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
     const proposalId = searchParams.get('proposalId');
+    const designId = searchParams.get('designId'); // Handle designId parameter
     const voterAddress = searchParams.get('voterAddress');
 
-    if (!proposalId) {
+    // Handle both proposalId and designId
+    if (!proposalId && !designId) {
       return NextResponse.json(
-        { success: false, error: 'Missing proposalId parameter' },
+        { success: false, error: 'Missing proposalId or designId parameter' },
+        { status: 400 }
+      );
+    }
+
+    // Handle designId → find or create proposal
+    let finalProposalId = proposalId;
+    
+    if (designId && !proposalId) {
+      console.log('🔍 [VOTE API] Looking for existing proposal for design:', designId);
+      
+      // Check if proposal already exists for this design
+      const { data: existingProposal } = await db.getAdminClient()
+        .from('proposals')
+        .select('blockchain_proposal_id')
+        .eq('design_id', designId)
+        .single();
+      
+      if (existingProposal) {
+        finalProposalId = existingProposal.blockchain_proposal_id;
+        console.log('✅ [VOTE API] Found existing proposal:', finalProposalId);
+             } else {
+         console.log('⚠️ [VOTE API] No proposal exists for design, attempting to create one...');
+         
+         // Get design details from database
+         const { data: design } = await db.getAdminClient()
+           .from('designs')
+           .select('*')
+           .eq('id', designId)
+           .single();
+         
+         if (!design || design.status !== 'candidate' || !design.token_id) {
+           return NextResponse.json({
+             success: false,
+             error: 'This design is not minted as an NFT yet or not eligible for voting',
+             needsProposal: true,
+             designId
+           }, { status: 400 });
+         }
+
+         // Create proposal for this design
+         try {
+           console.log('🚀 [VOTE API] Creating proposal for design:', designId);
+           const proposalResult = await blockchainService.proposeDesignApproval(
+             design.token_id,
+             `Proposal for design: ${design.name}`,
+             `Vote on whether to approve the design "${design.name}" by ${design.creator_address}`
+           );
+           
+           // Store proposal in database
+           const { data: newProposal } = await db.getAdminClient()
+             .from('proposals')
+             .insert({
+               design_id: designId,
+               blockchain_proposal_id: proposalResult.proposalId,
+               transaction_hash: proposalResult.transactionHash,
+               title: `Approval for ${design.name}`,
+               description: `Vote on whether to approve the design "${design.name}"`,
+               proposal_type: 'approval',
+               status: 'active',
+               created_at: new Date().toISOString()
+             })
+             .select('blockchain_proposal_id')
+             .single();
+           
+           if (newProposal) {
+             finalProposalId = newProposal.blockchain_proposal_id;
+             console.log('✅ [VOTE API] Created new proposal:', finalProposalId);
+           } else {
+             throw new Error('Failed to store proposal in database');
+           }
+           
+         } catch (createError) {
+           console.error('❌ [VOTE API] Failed to create proposal:', createError);
+           return NextResponse.json({
+             success: false,
+             error: 'Failed to create voting proposal for this design',
+             designId
+           }, { status: 500 });
+         }
+       }
+    }
+    
+    if (!finalProposalId) {
+      return NextResponse.json(
+        { success: false, error: 'No valid proposal ID found' },
         { status: 400 }
       );
     }
 
     console.log('📋 [VOTE API] Fetching proposal state:', {
-      proposalId: proposalId.slice(0, 10) + '...',
+      proposalId: finalProposalId.slice(0, 10) + '...',
       hasVoterAddress: !!voterAddress
     });
 
-    // Get proposal state from blockchain
-    const proposalData = await blockchainService.getProposalState(proposalId);
+    // Get proposal state from blockchain (with ENS error handling)
+    let proposalData;
+    try {
+      proposalData = await blockchainService.getProposalState(finalProposalId);
+    } catch (error) {
+      console.error('❌ [VOTE API] Blockchain error (possibly ENS on Chiliz):', error);
+      return NextResponse.json({
+        success: false,
+        error: 'Blockchain network error - Chiliz does not support ENS',
+        chainId: '88882'
+      }, { status: 500 });
+    }
 
     // Check if specific voter has voted (if voter address provided)
     let hasVoted = false;
-    if (voterAddress) {
+    if (voterAddress && finalProposalId) {
       try {
-        hasVoted = await blockchainService.hasUserVoted(proposalId, voterAddress);
+        hasVoted = await blockchainService.hasUserVoted(finalProposalId, voterAddress);
       } catch (error) {
-        console.warn('⚠️ [VOTE API] Could not check voter status:', error);
+        console.warn('⚠️ [VOTE API] Could not check voter status (ENS error):', error);
+        // Don't fail the request for ENS errors, just assume not voted
       }
     }
 

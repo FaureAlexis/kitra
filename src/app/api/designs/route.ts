@@ -160,10 +160,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       style: design.style,
       kitType: design.kit_type,
       tags: design.tags || [],
-      votes: design.view_count, // Using view_count as proxy for votes until voting is implemented
+      votes: design.vote_count || 0, // Real vote count from blockchain voting
       status: design.status,
       tokenId: design.token_id || undefined
     }));
+
+
 
     // Get total count for pagination
     let totalCount = allDesigns.length;

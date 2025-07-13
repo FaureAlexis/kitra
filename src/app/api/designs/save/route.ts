@@ -198,7 +198,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const mintResult = await blockchainService.mintDesignCandidate(
           body.userAddress,
           body.designName,
-          metadataIpfsUrl
+          metadataIpfsUrl,
+          true // Use high priority for faster confirmation
         );
 
         console.log('✅ [SAVE API] NFT minted successfully:', {
