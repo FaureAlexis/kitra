@@ -32,7 +32,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Logo width={32} color="black" />
-            <span className="text-xl font-bold">Kitra</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground/80 bg-clip-text text-transparent">Kitra</span>
           </Link>
 
           {/* Desktop Navigation */}

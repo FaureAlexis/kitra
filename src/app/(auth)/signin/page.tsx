@@ -28,22 +28,22 @@ export default function SignInPage() {
 
   const handleSIWESignIn = async () => {
     if (!address) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // Step 1: Get nonce from backend
       const nonceResponse = await fetch("/api/siwe/nonce", {
         method: "POST",
       });
-      
+
       if (!nonceResponse.ok) {
         throw new Error("Failed to get nonce");
       }
-      
+
       const { nonce } = await nonceResponse.json();
-      
+
       // Step 2: Create SIWE message
       const message = new SiweMessage({
         domain: window.location.host,
@@ -54,12 +54,12 @@ export default function SignInPage() {
         chainId: 88882, // Chiliz Spicy testnet
         nonce: nonce,
       });
-      
+
       const messageString = message.prepareMessage();
-      
+
       // Step 3: Sign message
       const signature = await signMessageAsync({ message: messageString });
-      
+
       // Step 4: Verify signature with backend
       const verifyResponse = await fetch("/api/siwe/verify", {
         method: "POST",
@@ -71,20 +71,20 @@ export default function SignInPage() {
           signature: signature,
         }),
       });
-      
+
       if (!verifyResponse.ok) {
         throw new Error("Failed to verify signature");
       }
-      
+
       const { success, user } = await verifyResponse.json();
-      
+
       if (!success) {
         throw new Error("Authentication failed");
       }
-      
+
       // Success! Redirect to dashboard
       router.push("/dashboard");
-      
+
     } catch (err) {
       console.error("SIWE sign-in error:", err);
       setError(err instanceof Error ? err.message : "Authentication failed");
@@ -96,7 +96,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10" />
-      
+
       <div className="relative w-full max-w-md">
         <Card className="border-0 shadow-2xl">
           <CardHeader className="text-center space-y-4 pb-6">
@@ -112,14 +112,14 @@ export default function SignInPage() {
               </CardDescription>
             </div>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             {!isConnected ? (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground text-center">
@@ -148,8 +148,8 @@ export default function SignInPage() {
                     {address}
                   </p>
                 </div>
-                
-                <Button 
+
+                <Button
                   onClick={handleSIWESignIn}
                   disabled={isLoading || isPending}
                   className="w-full h-12 text-base font-medium"
@@ -164,7 +164,7 @@ export default function SignInPage() {
                     "Sign In with Ethereum"
                   )}
                 </Button>
-                
+
                 <p className="text-xs text-muted-foreground text-center leading-relaxed">
                   By signing in, you agree to our{" "}
                   <a href="#" className="text-primary hover:underline">Terms of Service</a>{" "}
@@ -173,13 +173,13 @@ export default function SignInPage() {
                 </p>
               </div>
             )}
-            
+
             <div className="text-center pt-4 border-t">
               <p className="text-sm text-muted-foreground">
                 Don't have a wallet?{" "}
-                <a 
-                  href="https://metamask.io" 
-                  target="_blank" 
+                <a
+                  href="https://metamask.io"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline font-medium"
                 >
@@ -201,4 +201,4 @@ export default function SignInPage() {
       </div>
     </div>
   );
-} 
+}

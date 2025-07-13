@@ -21,7 +21,7 @@ export default function LandingPage() {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-              Design, vote, and mint unique football jerseys using AI. 
+              Design, vote, and mint unique football jerseys using AI.
               Join the decentralized revolution in sports fashion.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -57,7 +57,7 @@ export default function LandingPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <CardDescription className="text-base leading-relaxed">
-                  Use our AI-powered design tools to create unique football kit patterns. 
+                  Use our AI-powered design tools to create unique football kit patterns.
                   DALL-E 3 generates stunning textures based on your creativity.
                 </CardDescription>
               </CardContent>
@@ -87,7 +87,7 @@ export default function LandingPage() {
               </CardHeader>
               <CardContent className="text-center">
                 <CardDescription className="text-base leading-relaxed">
-                  Winning designs get minted as NFTs on Chiliz Spicy testnet. 
+                  Winning designs get minted as NFTs on Chiliz Spicy testnet.
                   Creators earn royalties from every trade.
                 </CardDescription>
               </CardContent>
@@ -227,4 +227,4 @@ export default function LandingPage() {
       </footer>
     </div>
   );
-} 
+}
