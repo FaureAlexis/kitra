@@ -74,11 +74,15 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
           {/* Hover Overlay */}
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-          {/* Status Badge */}
+          {/* Tags */}
           <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Badge className={`${getStatusColor(design.status)} border text-xs font-medium`}>
-              {design.status}
-            </Badge>
+            <div className="flex flex-wrap gap-1">
+              {design.tags.slice(0, 2).map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs bg-white/90 backdrop-blur-sm border-white/20">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
           </div>
 
           {/* Quick Actions */}
@@ -123,24 +127,7 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
           </div>
         </div>
 
-        {/* Minimal Caption Below */}
-        <div className="p-3">
-          <h3 className="font-medium text-sm text-gray-800 line-clamp-1 mb-1">
-            {design.name}
-          </h3>
-          <p className="text-xs text-gray-600 line-clamp-2">
-            {design.description}
-          </p>
 
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1 mt-2">
-            {design.tags.slice(0, 2).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs bg-gray-50 border-gray-200">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
       </div>
     );
   }
