@@ -119,9 +119,11 @@ export default function DesignDetailsPage() {
       const link = document.createElement('a');
       link.href = design.ipfsUrl;
       link.download = `${design.name.replace(/\s+/g, '_')}_texture.png`;
+      /* eslint-disable testing-library/no-node-access */
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      /* eslint-enable testing-library/no-node-access */
       
       toast.success('Download started!');
     } else {
