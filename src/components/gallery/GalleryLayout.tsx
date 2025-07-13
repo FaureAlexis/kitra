@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useDesigns } from '@/hooks/useDesigns';
 import { useVoting } from '@/hooks/useVoting';
 import { GalleryFilters } from './GalleryFilters';
+import { GalleryHeader } from './GalleryHeader';
 import { GalleryGrid } from './GalleryGrid';
 import { toast } from 'sonner';
 
@@ -144,27 +145,43 @@ export const GalleryLayout: React.FC<GalleryLayoutProps> = ({ className = '' }) 
 
   return (
     <div className={`space-y-8 ${className}`}>
-      <GalleryFilters
-        currentFilter={currentFilter}
-        currentTags={currentTags}
-        searchQuery={searchQuery}
-        onFilterChange={handleFilterChange}
-        onTagToggle={handleTagToggle}
-        onSearchChange={handleSearchChange}
-        onClearFilters={handleClearFilters}
+      
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
+      {/* Header */}
+      <GalleryHeader
+        total={total}
+        loading={loading}
+        onRefresh={handleRefresh}
       />
 
-      <div className="min-h-screen">
-        <GalleryGrid
-          designs={designs}
-          loading={loading}
-          hasMore={hasMore}
-          onLoadMore={loadMore}
-          onVote={handleVote}
-          onShare={handleShare}
-          onFavorite={handleFavorite}
-          isVoting={isVoting}
-        />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 pb-16">
+        {/* Filters */}
+        <div className="mb-12">
+          <GalleryFilters
+            currentFilter={currentFilter}
+            currentTags={currentTags}
+            searchQuery={searchQuery}
+            onFilterChange={handleFilterChange}
+            onTagToggle={handleTagToggle}
+            onSearchChange={handleSearchChange}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
+
+        <div className="min-h-screen">
+          <GalleryGrid
+            designs={designs}
+            loading={loading}
+            hasMore={hasMore}
+            onLoadMore={loadMore}
+            onVote={handleVote}
+            onShare={handleShare}
+            onFavorite={handleFavorite}
+            isVoting={isVoting}
+          />
+        </div>
       </div>
     </div>
   );
