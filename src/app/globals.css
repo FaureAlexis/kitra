@@ -120,3 +120,128 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Pinterest-style Gallery Styles */
+@layer utilities {
+    /* Masonry Grid Enhancements */
+  .masonry-grid {
+    position: relative;
+  }
+
+  .masonry-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Pinterest Card Styles */
+  .pinterest-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    transform-origin: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .pinterest-item:hover {
+    transform: scale(1.03) translateY(-2px);
+    filter: brightness(1.05);
+    z-index: 10;
+  }
+
+  .pinterest-item > div {
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .pinterest-item:hover > div {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Image Hover Effects */
+  .pinterest-item img {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .pinterest-item:hover img {
+    transform: scale(1.05);
+  }
+
+    /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .masonry-column {
+      gap: 8px;
+    }
+
+    .pinterest-item:hover {
+      transform: scale(1.02) translateY(-1px);
+    }
+  }
+
+  /* Staggered Animation Classes */
+  .fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Enhanced Caption Styles */
+  .pinterest-caption {
+    font-family: 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #333;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 8px 12px;
+    border-radius: 0 0 8px 8px;
+    transition: all 0.3s ease;
+  }
+
+  .pinterest-caption:hover {
+    background: rgba(255, 255, 255, 0.98);
+  }
+
+  /* Dark Mode Adjustments */
+
+  .dark .pinterest-item > div {
+    background: #262626;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .pinterest-item:hover > div {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .dark .pinterest-caption {
+    background: rgba(38, 38, 38, 0.95);
+    color: #e5e5e5;
+  }
+
+  .dark .pinterest-caption:hover {
+    background: rgba(38, 38, 38, 0.98);
+  }
+}
+
+/* Smooth Scrolling for Better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced Focus States for Accessibility */
+.pinterest-item:focus-within {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+}
