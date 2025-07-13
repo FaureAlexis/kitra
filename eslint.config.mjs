@@ -38,6 +38,12 @@ const eslintConfig = [
       "no-console": "off",
     },
   },
+  {
+    files: ["**/api/**/*.ts", "**/api/**/*.tsx"],
+    rules: {
+      "testing-library/no-node-access": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

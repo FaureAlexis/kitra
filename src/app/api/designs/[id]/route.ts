@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/database/client';
 import { DesignListItem } from '../route';
 
 export interface DesignDetails extends DesignListItem {
@@ -8,6 +9,11 @@ export interface DesignDetails extends DesignListItem {
   creatorEnsName?: string; // ENS name if available
   publishedAt?: string; // When it was published (if published)
   lastModified?: string; // Last modification date
+  downloads?: number; // Number of downloads
+  shares?: number; // Number of shares
+  contractAddress?: string; // Smart contract address if minted
+  mintTransactionHash?: string; // Transaction hash of minting
+  mintedAt?: string; // When it was minted as NFT
 }
 
 export interface DesignDetailsResponse {
@@ -34,107 +40,40 @@ export async function GET(
       );
     }
 
-    // TODO: In a real implementation, this would fetch from a database
-    // For now, we'll return mock data that matches the structure
-    const mockDesigns: DesignDetails[] = [
-      {
-        id: 'design_1',
-        name: 'Lightning Bolt Home Kit',
-        description: 'Electric blue and gold dynamic energy pattern with modern geometric elements that create a striking visual impact',
-        creator: '0x742d35Cc6464C4532d18174C9c4F021F551B2dC4',
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        ipfsHash: 'QmHash1234567890',
-        ipfsUrl: 'https://gateway.pinata.cloud/ipfs/QmHash1234567890',
-        metadataHash: 'QmMeta1234567890',
-        metadataUrl: 'https://gateway.pinata.cloud/ipfs/QmMeta1234567890',
-        prompt: 'Modern football kit with lightning bolt patterns, electric blue and gold colors, dynamic energy design with geometric elements and high contrast details',
-        style: 'modern',
-        kitType: 'home',
-        tags: ['modern', 'blue', 'gold', 'lightning', 'dynamic', 'geometric'],
-        votes: 156,
-        status: 'published',
-        // Extended fields for details
-        textureData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', // Placeholder base64
-        metadataJson: {
-          name: 'Lightning Bolt Home Kit',
-          description: 'Electric blue and gold dynamic energy pattern with modern geometric elements',
-          attributes: [
-            { trait_type: 'Style', value: 'modern' },
-            { trait_type: 'Kit Type', value: 'home' },
-            { trait_type: 'AI Generated', value: 'true' },
-            { trait_type: 'Generator', value: 'GPT-image-1' }
-          ]
-        },
-        creatorEnsName: 'designer1.eth',
-        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        lastModified: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: 'design_2',
-        name: 'Classic Stripes Heritage',
-        description: 'Timeless black and white vertical stripes with subtle texture details and traditional football heritage aesthetics',
-        creator: '0x123a45B6789C012d3E4F56789A0B1C2D3E4F5678',
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        ipfsHash: 'QmHash2345678901',
-        ipfsUrl: 'https://gateway.pinata.cloud/ipfs/QmHash2345678901',
-        metadataHash: 'QmMeta2345678901',
-        metadataUrl: 'https://gateway.pinata.cloud/ipfs/QmMeta2345678901',
-        prompt: 'Classic football kit with black and white vertical stripes, traditional design with modern touches and premium fabric texture',
-        style: 'classic',
-        kitType: 'home',
-        tags: ['classic', 'black', 'white', 'stripes', 'traditional', 'heritage'],
-        votes: 89,
-        status: 'candidate',
-        // Extended fields
-        textureData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-        metadataJson: {
-          name: 'Classic Stripes Heritage',
-          description: 'Timeless black and white vertical stripes',
-          attributes: [
-            { trait_type: 'Style', value: 'classic' },
-            { trait_type: 'Kit Type', value: 'home' }
-          ]
-        },
-        creatorEnsName: 'heritage.eth',
-        lastModified: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: 'design_3',
-        name: 'Retro Wave Synthwave',
-        description: '80s inspired wavy pattern in neon colors with vintage aesthetics and cyberpunk elements',
-        creator: '0x456e78F9012A345B6789C012D3E4F56789A0B1C2',
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        ipfsHash: 'QmHash3456789012',
-        ipfsUrl: 'https://gateway.pinata.cloud/ipfs/QmHash3456789012',
-        metadataHash: 'QmMeta3456789012',
-        metadataUrl: 'https://gateway.pinata.cloud/ipfs/QmMeta3456789012',
-        prompt: 'Retro 80s football kit with neon wave patterns, synthwave aesthetics, pink and cyan colors with glowing effects',
-        style: 'retro',
-        kitType: 'away',
-        tags: ['retro', 'neon', 'pink', 'cyan', 'synthwave', '80s', 'glowing'],
-        votes: 234,
-        status: 'published',
-        // Extended fields
-        textureData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-        metadataJson: {
-          name: 'Retro Wave Synthwave',
-          description: '80s inspired wavy pattern in neon colors',
-          attributes: [
-            { trait_type: 'Style', value: 'retro' },
-            { trait_type: 'Kit Type', value: 'away' },
-            { trait_type: 'Era', value: '80s' }
-          ]
-        },
-        creatorEnsName: 'synthwave.eth',
-        publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        lastModified: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-
-    const design = mockDesigns.find(d => d.id === designId);
+    console.log('🗄️ [DESIGN DETAILS API] Querying database for design:', designId);
     
-    if (!design) {
-      console.log('❌ [DESIGN DETAILS API] Design not found:', designId);
+    // Query design from database
+    const { data: design, error } = await db.getAdminClient()
+      .from('designs')
+      .select(`
+        id,
+        name,
+        description,
+        creator_address,
+        created_at,
+        ipfs_hash,
+        ipfs_url,
+        metadata_hash,
+        metadata_url,
+        prompt,
+        style,
+        kit_type,
+        tags,
+        status,
+        view_count,
+        download_count,
+        share_count,
+        token_id,
+        contract_address,
+        mint_transaction_hash,
+        published_at,
+        minted_at
+      `)
+      .eq('id', designId)
+      .single();
+
+    if (error || !design) {
+      console.error('❌ [DESIGN DETAILS API] Design not found:', designId, error);
       return NextResponse.json(
         { success: false, error: 'Design not found' },
         { status: 404 }
@@ -144,19 +83,78 @@ export async function GET(
     console.log('✅ [DESIGN DETAILS API] Design found:', {
       id: design.id,
       name: design.name,
-      status: design.status,
-      hasTextureData: !!design.textureData
+      creator: design.creator_address,
+      status: design.status
     });
 
-    const response: DesignDetailsResponse = {
-      success: true,
-      design
+    // Get texture data from IPFS if available
+    let textureData = '';
+    if (design.ipfs_url) {
+      try {
+        console.log('🌐 [DESIGN DETAILS API] Fetching texture from IPFS...');
+        const textureResponse = await fetch(design.ipfs_url);
+        if (textureResponse.ok) {
+          const textureBlob = await textureResponse.blob();
+          const arrayBuffer = await textureBlob.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          textureData = `data:image/png;base64,${buffer.toString('base64')}`;
+          console.log('✅ [DESIGN DETAILS API] Texture data loaded from IPFS');
+        } else {
+          console.warn('⚠️ [DESIGN DETAILS API] Failed to fetch texture from IPFS');
+        }
+      } catch (textureError) {
+        console.warn('⚠️ [DESIGN DETAILS API] Error fetching texture:', textureError);
+      }
+    }
+
+    // Transform to API format
+    const designDetails: DesignDetails = {
+      id: design.id,
+      name: design.name,
+      description: design.description || '',
+      creator: design.creator_address,
+      createdAt: design.created_at,
+      ipfsHash: design.ipfs_hash || '',
+      ipfsUrl: design.ipfs_url || '',
+      metadataHash: design.metadata_hash || '',
+      metadataUrl: design.metadata_url || '',
+      prompt: design.prompt,
+      style: design.style,
+      kitType: design.kit_type,
+      tags: design.tags || [],
+      votes: design.view_count, // Using view_count as proxy for votes
+      status: design.status,
+      // Extended fields for details
+      textureData: textureData,
+      downloads: design.download_count,
+      shares: design.share_count,
+      tokenId: design.token_id || undefined,
+      contractAddress: design.contract_address || undefined,
+      mintTransactionHash: design.mint_transaction_hash || undefined,
+      publishedAt: design.published_at || undefined,
+      mintedAt: design.minted_at || undefined
     };
 
-    return NextResponse.json(response);
+    // Increment view count
+    try {
+      await db.getAdminClient()
+        .from('designs')
+        .update({ view_count: design.view_count + 1 })
+        .eq('id', designId);
+      console.log('📊 [DESIGN DETAILS API] View count incremented');
+    } catch (viewError) {
+      console.warn('⚠️ [DESIGN DETAILS API] Failed to increment view count:', viewError);
+    }
+
+    console.log('✅ [DESIGN DETAILS API] Design details fetched successfully');
+
+    return NextResponse.json({
+      success: true,
+      design: designDetails
+    });
 
   } catch (error) {
-    console.error('❌ [DESIGN DETAILS API] Error fetching design details:', error);
+    console.error('💥 [DESIGN DETAILS API] Critical error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch design details' },
       { status: 500 }

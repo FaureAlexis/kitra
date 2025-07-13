@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PinataSDK } from 'pinata';
 import { blockchainService } from '@/lib/services/blockchain.service';
+import { db } from '@/lib/database/client';
 
 interface SaveDesignRequest {
   textureData: string; // base64 encoded
@@ -21,6 +22,7 @@ interface SaveDesignResponse {
   metadataUrl?: string;
   tokenId?: number; // If minted as NFT
   transactionHash?: string; // Blockchain transaction hash
+  designId?: string; // Database design ID (UUID)
   error?: string;
 }
 
@@ -206,9 +208,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         response.tokenId = mintResult.tokenId;
         response.transactionHash = mintResult.transactionHash;
-
-        // TODO: Store design data in database with blockchain information
-        console.log('📝 [SAVE API] Design metadata should be stored in database here');
         
       } catch (mintError) {
         console.error('❌ [SAVE API] NFT minting failed:', mintError);
@@ -218,14 +217,73 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // TODO: Store design metadata in database
-    // This would include:
-    // - Design basic info (name, description, prompt, style, etc.)
-    // - IPFS hashes and URLs
-    // - Blockchain data (token ID, transaction hash, contract address)
-    // - User data (creator address)
-    // - Status (draft, candidate, published)
-    console.log('📝 [SAVE API] TODO: Store design in database with all metadata');
+    // Store design metadata in database
+    console.log('📝 [SAVE API] Storing design in database...');
+    try {
+      // Ensure user exists in database
+      if (body.userAddress) {
+        console.log('👤 [SAVE API] Ensuring user exists in database...');
+        await db.getAdminClient().from('users').upsert({
+          wallet_address: body.userAddress.toLowerCase(),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'wallet_address',
+          ignoreDuplicates: false
+        });
+        console.log('✅ [SAVE API] User record ensured');
+      }
+
+      // Insert design record
+      console.log('💾 [SAVE API] Inserting design record...');
+      const designData = {
+        creator_address: body.userAddress?.toLowerCase() || 'anonymous',
+        name: body.designName,
+        description: body.designDescription || '',
+        prompt: body.prompt,
+        style: body.style,
+        kit_type: body.kitType,
+        tags: [body.style, body.kitType, 'ai-generated'],
+        ipfs_hash: textureUpload.cid,
+        ipfs_url: textureIpfsUrl,
+        metadata_hash: metadataUpload.cid,
+        metadata_url: metadataIpfsUrl,
+        token_id: response.tokenId || null,
+        contract_address: response.tokenId ? process.env.DESIGN_CANDIDATE_ADDRESS : null,
+        mint_transaction_hash: response.transactionHash || null,
+        status: response.tokenId ? 'candidate' : 'draft',
+        is_featured: false,
+        view_count: 0,
+        download_count: 0,
+        share_count: 0,
+        minted_at: response.tokenId ? new Date().toISOString() : null
+      };
+
+      const { data: designRecord, error: designError } = await db.getAdminClient()
+        .from('designs')
+        .insert(designData)
+        .select('id')
+        .single();
+
+      if (designError) {
+        console.error('❌ [SAVE API] Database insert failed:', designError);
+        throw new Error(`Database error: ${designError.message}`);
+      }
+
+      console.log('✅ [SAVE API] Design stored in database:', {
+        designId: designRecord.id,
+        ipfsHash: textureUpload.cid,
+        status: designData.status,
+        hasNFT: !!designData.token_id
+      });
+
+      // Add design ID to response
+      response.designId = designRecord.id;
+
+    } catch (dbError) {
+      console.error('❌ [SAVE API] Database storage failed:', dbError);
+      // Don't fail the entire request - IPFS save was successful
+      console.log('⚠️ [SAVE API] Continuing with IPFS-only response due to database error');
+    }
 
     console.log('🎉 [SAVE API] Design saved successfully!', {
       textureHash: textureUpload.cid,
@@ -233,7 +291,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       textureUrl: textureIpfsUrl,
       metadataUrl: metadataIpfsUrl,
       tokenId: response.tokenId,
-      hasBlockchainData: !!response.tokenId
+      hasBlockchainData: !!response.tokenId,
+      designId: response.designId
     });
 
     return NextResponse.json(response);

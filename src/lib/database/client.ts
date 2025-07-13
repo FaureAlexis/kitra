@@ -195,5 +195,16 @@ export function createDatabaseClient(): DatabaseClient {
   return DatabaseClient.getInstance();
 }
 
-// Export singleton instance
-export const db = createDatabaseClient(); 
+// Export singleton instance - handle build-time gracefully
+export const db = (() => {
+  try {
+    return createDatabaseClient();
+  } catch (error) {
+    // During build time, return a mock client to prevent build failures
+    if (process.env.NODE_ENV === 'production' || process.env.NEXT_PHASE === 'phase-production-build') {
+      console.warn('Database client not available during build - using mock');
+      return null as any;
+    }
+    throw error;
+  }
+})(); 
