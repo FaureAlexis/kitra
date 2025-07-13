@@ -10,4 +10,4 @@ export const HudHeader = React.memo(function HudHeader() {
       <p className={styles.hudSubtitle}>Design your perfect football kit</p>
     </div>
   );
-}); 
+});

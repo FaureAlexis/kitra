@@ -19,7 +19,7 @@ function LoadingSkeleton() {
           </div>
         </div>
       </div>
-      
+
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[1, 2, 3, 4].map((i) => (
           <Card key={i} className="border-0 shadow-lg">
@@ -94,7 +94,7 @@ export default function DashboardPage() {
             <span className="text-primary-foreground font-bold">📊</span>
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground/80 bg-clip-text text-transparent">Dashboard</h1>
             <p className="text-muted-foreground">
               Welcome back, {walletData.ensName || `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}`}
             </p>
@@ -372,4 +372,4 @@ export default function DashboardPage() {
       </Card>
     </div>
   );
-} 
+}

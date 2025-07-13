@@ -32,7 +32,7 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
 
               {/* Title & Description */}
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent mb-2">
+                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground/80 bg-clip-text text-transparent mb-2">
                   Design Gallery
                 </h1>
                 <p className="text-lg text-muted-foreground max-w-2xl">

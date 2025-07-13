@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { 
-  ArrowLeft, 
-  Share2, 
-  Download, 
-  Edit, 
+import {
+  ArrowLeft,
+  Share2,
+  Download,
+  Edit,
   Heart,
   ExternalLink,
   Copy,
@@ -35,11 +35,11 @@ export default function DesignDetailsPage() {
   const router = useRouter();
   const designId = params.id as string;
   const walletData = useWalletData();
-  
+
   const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [currentVotes, setCurrentVotes] = useState(0);
-  
+
   const { design, loading, error, loadDesign } = useDesignLoader();
 
   // Load design on mount
@@ -71,18 +71,18 @@ export default function DesignDetailsPage() {
     }
 
     setIsVoting(true);
-    
+
     try {
       // TODO: Implement actual voting API call
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+
       setCurrentVotes(prev => prev + 1);
       setHasVoted(true);
-      
+
       toast.success('Vote cast successfully!', {
         description: 'Your vote has been recorded on the blockchain'
       });
-      
+
     } catch (error) {
       console.error('Voting error:', error);
       toast.error('Failed to cast vote', {
@@ -95,7 +95,7 @@ export default function DesignDetailsPage() {
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/design/${designId}`;
-    
+
     try {
       if (navigator.share) {
         await navigator.share({
@@ -124,7 +124,7 @@ export default function DesignDetailsPage() {
       link.click();
       document.body.removeChild(link);
       /* eslint-enable testing-library/no-node-access */
-      
+
       toast.success('Download started!');
     } else {
       toast.error('No image available for download');
@@ -148,7 +148,7 @@ export default function DesignDetailsPage() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const isOwner = walletData.address && design && 
+  const isOwner = walletData.address && design &&
     walletData.address.toLowerCase() === design.creator.toLowerCase();
 
   if (loading) {
@@ -159,7 +159,7 @@ export default function DesignDetailsPage() {
             <Skeleton className="h-10 w-10 rounded-lg" />
             <Skeleton className="h-8 w-64" />
           </div>
-          
+
           <div className="grid lg:grid-cols-2 gap-8">
             <Skeleton className="aspect-square w-full rounded-2xl" />
             <div className="space-y-6">
@@ -238,7 +238,7 @@ export default function DesignDetailsPage() {
                   </div>
                 }>
                   <SafeCanvas>
-                    <Scene 
+                    <Scene
                       modelPath="/models/jersey.glb"
                       primaryColor="#ec4899"
                       secondaryColor="#ffffff"
@@ -248,14 +248,14 @@ export default function DesignDetailsPage() {
                     />
                   </SafeCanvas>
                 </Suspense>
-                
+
                 {/* Status Badge */}
                 <div className="absolute top-4 left-4">
                   <Badge variant={design.status === 'published' ? 'default' : 'secondary'}>
                     {design.status}
                   </Badge>
                 </div>
-                
+
                 {/* View Count */}
                 <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1">
                   <div className="flex items-center gap-1 text-white text-sm">
@@ -268,17 +268,17 @@ export default function DesignDetailsPage() {
 
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-4">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 onClick={handleLoadInBuilder}
                 className="w-full"
               >
                 <Palette className="h-4 w-4 mr-2" />
                 Load in Builder
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
+              <Button
+                variant="outline"
+                size="lg"
                 onClick={handleDownload}
                 className="w-full"
               >
@@ -302,9 +302,9 @@ export default function DesignDetailsPage() {
                 <p className="text-muted-foreground leading-relaxed">
                   {design.description}
                 </p>
-                
+
                 <Separator />
-                
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -341,7 +341,7 @@ export default function DesignDetailsPage() {
                 <CardContent>
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-2xl font-bold">{currentVotes} votes</div>
-                    <Button 
+                    <Button
                       onClick={handleVote}
                       disabled={isVoting || hasVoted || !walletData.isConnected}
                       size="lg"
@@ -350,7 +350,7 @@ export default function DesignDetailsPage() {
                       {isVoting ? 'Voting...' : hasVoted ? 'Voted' : 'Vote'}
                     </Button>
                   </div>
-                  
+
                   {!walletData.isConnected && (
                     <p className="text-sm text-muted-foreground">
                       Connect your wallet to vote for this design
@@ -394,9 +394,9 @@ export default function DesignDetailsPage() {
                     <code className="bg-muted px-2 py-1 rounded text-xs">
                       {design.ipfsHash?.slice(0, 12)}...
                     </code>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="h-6 w-6 p-0"
                       onClick={() => {
                         navigator.clipboard.writeText(design.ipfsHash || '');
@@ -407,7 +407,7 @@ export default function DesignDetailsPage() {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">View on IPFS:</span>
                   <Button variant="ghost" size="sm" asChild>
@@ -416,7 +416,7 @@ export default function DesignDetailsPage() {
                     </a>
                   </Button>
                 </div>
-                
+
                 {design.metadataUrl && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Metadata:</span>
@@ -459,4 +459,4 @@ export default function DesignDetailsPage() {
       </div>
     </div>
   );
-} 
+}
