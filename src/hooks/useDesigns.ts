@@ -7,6 +7,7 @@ export interface UseDesignsParams {
   status?: 'published' | 'candidate' | 'draft';
   creator?: string;
   tags?: string[];
+  search?: string;
 }
 
 export interface UseDesignsResult {
@@ -45,6 +46,10 @@ export const useDesigns = (params: UseDesignsParams = {}): UseDesignsResult => {
     
     if (params.tags && params.tags.length > 0) {
       searchParams.set('tags', params.tags.join(','));
+    }
+    
+    if (params.search) {
+      searchParams.set('search', params.search);
     }
     
     return searchParams.toString();
@@ -125,11 +130,11 @@ export const useDesigns = (params: UseDesignsParams = {}): UseDesignsResult => {
     }
   }, [page, total, pageSize, fetchDesigns]);
 
-  // Initial fetch and refetch when params change
+    // Initial fetch and refetch when params change
   useEffect(() => {
     console.log('🔄 [useDesigns] Params changed, refetching...', params);
     refetchDesigns();
-  }, [params.status, params.creator, params.tags?.join(',')]);
+  }, [params.status, params.creator, params.tags?.join(','), params.search]);
 
   const hasMore = page * pageSize < total;
 

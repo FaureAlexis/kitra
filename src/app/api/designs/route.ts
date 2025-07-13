@@ -43,26 +43,29 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     
     // Parse query parameters
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '10')));
-    const offset = (page - 1) * limit;
+    const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get('pageSize') || searchParams.get('limit') || '12')));
+    const offset = (page - 1) * pageSize;
     
     const status = searchParams.get('status') as 'draft' | 'candidate' | 'published' | 'rejected' | null;
     const creator = searchParams.get('creator') || searchParams.get('userId');
     const style = searchParams.get('style');
     const kitType = searchParams.get('kitType');
     const search = searchParams.get('search');
+    const tagsParam = searchParams.get('tags');
+    const tags = tagsParam ? tagsParam.split(',').map(tag => tag.trim()) : null;
     const sortBy = searchParams.get('sortBy') || 'created_at';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     console.log('🔍 [DESIGNS API] Query parameters:', {
       page,
-      limit,
+      pageSize,
       offset,
       status,
       creator,
       style,
       kitType,
       search,
+      tags,
       sortBy,
       sortOrder
     });
@@ -109,6 +112,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (search) {
       query = query.or(`name.ilike.%${search}%, description.ilike.%${search}%, prompt.ilike.%${search}%`);
     }
+    
+    if (tags && tags.length > 0) {
+      // Filter designs that contain any of the specified tags
+      const tagFilters = tags.map(tag => `tags.cs.{${tag}}`).join(',');
+      query = query.or(tagFilters);
+    }
 
     // Apply sorting
     const validSortColumns = ['created_at', 'name', 'view_count', 'status'];
@@ -118,7 +127,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     query = query.order(sortColumn, { ascending: order });
 
     // Apply pagination
-    query = query.range(offset, offset + limit - 1);
+    query = query.range(offset, offset + pageSize - 1);
 
     console.log('🗄️ [DESIGNS API] Executing database query...');
     const { data: designs, error, count } = await query;
@@ -158,7 +167,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Get total count for pagination
     let totalCount = allDesigns.length;
-    if (!creator && !status && !style && !kitType && !search) {
+    if (!creator && !status && !style && !kitType && !search && !tags) {
       // Get total count only for unfiltered queries
       const { count: fullCount } = await db.getAdminClient()
         .from('designs')
@@ -170,20 +179,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       designs: allDesigns.length,
       totalCount,
       page,
-      limit
+      pageSize
     });
 
     return NextResponse.json({
       success: true,
       designs: allDesigns,
-      pagination: {
-        page,
-        limit,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasNext: page * limit < totalCount,
-        hasPrev: page > 1
-      }
+      total: totalCount,
+      page,
+      pageSize,
+      hasMore: page * pageSize < totalCount
     });
 
   } catch (error) {
