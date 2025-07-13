@@ -21,42 +21,53 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background" style={{ scrollBehavior: 'smooth' }}>
+    <div className="flex flex-col min-h-screen relative" style={{ scrollBehavior: 'smooth' }}>
+      {/* Gradient Image Background for Entire Page */}
+      <div className="fixed inset-0 -z-10">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/gradient-background.png)',
+            backgroundSize: '100% auto',
+            backgroundPosition: 'center top'
+          }}
+        />
+      </div>
 
       {/* Navigation Banner */}
-      <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-0 z-50 w-full border-b border-white/30 bg-white/15 backdrop-blur-lg supports-[backdrop-filter]:bg-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <Logo width={32} color="black" />
+              <Logo width={32} color="white" />
 
-              <span className="text-xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground/80 bg-clip-text text-transparent">Kitra</span>
+              <span className="text-xl font-bold text-white">Kitra</span>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-6">
               <button
                 onClick={() => handleAnchorClick('#hero')}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
               >
                 Home
               </button>
               <button
                 onClick={() => handleAnchorClick('#features')}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
               >
                 Features
               </button>
               <button
                 onClick={() => handleAnchorClick('#how-it-works')}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
               >
                 How It Works
               </button>
               <button
                 onClick={() => handleAnchorClick('#get-started')}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-white/80 hover:text-white transition-colors"
               >
                 Get Started
               </button>
@@ -93,29 +104,29 @@ export default function LandingPage() {
 
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className="md:hidden border-t border-border/40 py-4">
+            <div className="md:hidden border-t border-white/30 py-4">
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => handleAnchorClick('#hero')}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors text-left"
                 >
                   Home
                 </button>
                 <button
                   onClick={() => handleAnchorClick('#features')}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors text-left"
                 >
                   Features
                 </button>
                 <button
                   onClick={() => handleAnchorClick('#how-it-works')}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors text-left"
                 >
                   How It Works
                 </button>
                 <button
                   onClick={() => handleAnchorClick('#get-started')}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors text-left"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors text-left"
                 >
                   Get Started
                 </button>
@@ -127,21 +138,6 @@ export default function LandingPage() {
 
       {/* Hero Section - Design. Vote. Earn. */}
       <section id="hero" className="relative overflow-hidden min-h-[90vh] flex items-center">
-        {/* Harmonized Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background to-primary/8" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-pink-500/5 via-transparent to-primary/5" />
-          <div className="absolute inset-0 backdrop-blur-[0.5px]" />
-
-          {/* Animated Elements */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(99,102,241,0.12),transparent)] animate-pulse" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(236,72,153,0.12),transparent)] animate-pulse" style={{animationDelay: '1s'}} />
-          </div>
-
-          {/* Dot Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.12)_1px,transparent_0)] bg-[size:40px_40px] opacity-20" />
-        </div>
 
         <div className="relative container mx-auto px-4 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -149,25 +145,25 @@ export default function LandingPage() {
             <div className="space-y-8">
               <div className="space-y-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-                  <Zap className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">Next-Gen Football Kit Design</span>
+                  <Zap className="w-4 h-4 text-white" />
+                  <span className="text-sm font-medium text-white">Next-Gen Football Kit Design</span>
                 </div>
 
                 <div className="space-y-4">
-                  <h1 className="text-6xl md:text-8xl font-bold leading-tight">
-                    <span className="block bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                  <h1 className="text-6xl md:text-8xl font-bold leading-tight text-white">
+                    <span className="block">
                       Design.
                     </span>
-                    <span className="block bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                    <span className="block">
                       Vote.
                     </span>
-                    <span className="block bg-gradient-to-r from-pink-500 to-foreground bg-clip-text text-transparent">
+                    <span className="block">
                       Earn.
                     </span>
                   </h1>
                 </div>
 
-                <p className="text-xl text-muted-foreground max-w-xl leading-relaxed">
+                <p className="text-xl text-white/80 max-w-xl leading-relaxed">
                   Your jersey, your token, your share of the revenue.
                 </p>
               </div>
@@ -209,12 +205,6 @@ export default function LandingPage() {
 
       {/* From Prompt to Jersey Section */}
       <section id="features" className="relative py-24">
-        {/* Harmonized Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-bl from-primary/6 via-background to-pink-500/6" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary/4 to-transparent" />
-          <div className="absolute inset-0 backdrop-blur-[0.5px]" />
-        </div>
 
         <div className="relative container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -224,28 +214,28 @@ export default function LandingPage() {
             {/* Right - Content */}
             <div className="order-1 lg:order-2 space-y-8">
               <div className="space-y-6">
-                <h2 className="text-5xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                <h2 className="text-5xl font-bold text-white">
                   From prompt to jersey in under{" "}
-                  <span className="bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                  <span className="text-white">
                     60 seconds
                   </span>
                 </h2>
 
-                <p className="text-xl text-muted-foreground leading-relaxed">
+                <p className="text-xl text-white/80 leading-relaxed">
                   Describe your idea. Watch it turn into a 3D jersey with AI-generated textures and real-time previews.
                 </p>
               </div>
 
               {/* Example Prompt */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <div className="bg-white/20 backdrop-blur-md rounded-2xl p-6 border border-white/30">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                    <Paintbrush className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
+                    <Paintbrush className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-sm font-medium text-muted-foreground">Example prompt:</span>
+                  <span className="text-sm font-medium text-white/80">Example prompt:</span>
                 </div>
-                <div className="bg-gradient-to-r from-primary/10 to-pink-500/10 rounded-lg p-4 border border-primary/20">
-                  <p className="text-foreground font-medium">
+                <div className="bg-white/20 rounded-lg p-4 border border-white/30">
+                  <p className="text-white font-medium">
                     "Golden dragon with lightning patterns on a deep blue background"
                   </p>
                 </div>
@@ -254,21 +244,21 @@ export default function LandingPage() {
               {/* Features */}
               <div className="grid grid-cols-2 gap-4 pl-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-emerald-600" />
+                  <div className="w-10 h-10 bg-emerald-500/40 rounded-full flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div>
-                    <div className="font-medium">AI-Powered</div>
-                    <div className="text-sm text-muted-foreground">DALL-E 3 Integration</div>
+                    <div className="font-medium text-white">AI-Powered</div>
+                    <div className="text-sm text-white/70">AI Integration</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-violet-500/20 rounded-full flex items-center justify-center">
-                    <Star className="w-5 h-5 text-violet-600" />
+                  <div className="w-10 h-10 bg-violet-500/40 rounded-full flex items-center justify-center">
+                    <Star className="w-5 h-5 text-violet-400" />
                   </div>
                   <div>
-                    <div className="font-medium">Real-time</div>
-                    <div className="text-sm text-muted-foreground">Instant Preview</div>
+                    <div className="font-medium text-white">Real-time</div>
+                    <div className="text-sm text-white/70">Instant Preview</div>
                   </div>
                 </div>
               </div>
@@ -279,19 +269,13 @@ export default function LandingPage() {
 
       {/* How it Works Section */}
       <section id="how-it-works" className="relative py-24">
-        {/* Harmonized Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background to-primary/8" />
-          <div className="absolute inset-0 bg-gradient-to-tl from-pink-500/4 via-transparent to-primary/4" />
-          <div className="absolute inset-0 backdrop-blur-[0.5px]" />
-        </div>
 
         <div className="relative container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
               How it works?
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-white/80 max-w-2xl mx-auto">
               Five simple steps to create, vote, and earn from your football kit designs
             </p>
           </div>
@@ -372,28 +356,19 @@ export default function LandingPage() {
 
       {/* Final CTA Section */}
       <section id="get-started" className="relative py-24 overflow-hidden">
-        {/* Harmonized Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/8 via-background to-primary/8" />
-          <div className="absolute inset-0 bg-gradient-to-tl from-primary/6 via-transparent to-pink-500/6" />
-          <div className="absolute inset-0 backdrop-blur-[0.5px]" />
-
-          {/* Radial Accent */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.08),transparent)]" />
-        </div>
 
         <div className="relative container mx-auto px-4 text-center">
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="space-y-6">
-              <h2 className="text-4xl md:text-6xl font-bold">
-                <span className="block bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+              <h2 className="text-4xl md:text-6xl font-bold text-white">
+                <span className="block">
                   Ready to Design
                 </span>
-                <span className="block bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                <span className="block">
                   the Future?
                 </span>
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-xl text-white/80 max-w-2xl mx-auto">
                 Join thousands of creators building the next generation of football fashion on Chiliz
               </p>
             </div>
@@ -426,23 +401,18 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative border-t">
-        {/* Harmonized Background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/4 via-background to-primary/4" />
-          <div className="absolute inset-0 backdrop-blur-sm" />
-        </div>
+      <footer className="relative border-t border-white/10">
 
         <div className="relative container mx-auto px-4 py-16">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <h3 className="text-2xl font-bold text-white">
                 Kitra
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-white/70">
                 The future of football kit design is here. Powered by Chiliz.
               </p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-white/70">
                 <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
                   <span className="text-xs font-bold text-white">CHZ</span>
                 </div>
@@ -451,35 +421,35 @@ export default function LandingPage() {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold">Platform</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><Link href="/gallery" className="hover:text-foreground transition-colors">Gallery</Link></li>
-                <li><Link href="/builder" className="hover:text-foreground transition-colors">Builder</Link></li>
-                <li><Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link></li>
+              <h4 className="font-semibold text-white">Platform</h4>
+              <ul className="space-y-2 text-white/70">
+                <li><Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link></li>
+                <li><Link href="/builder" className="hover:text-white transition-colors">Builder</Link></li>
+                <li><Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link></li>
               </ul>
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold">Community</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" target="_blank" className="hover:text-foreground transition-colors">Discord</a></li>
-                <li><a href="#" target="_blank" className="hover:text-foreground transition-colors">Twitter</a></li>
-                <li><a href="#" target="_blank" className="hover:text-foreground transition-colors">GitHub</a></li>
+              <h4 className="font-semibold text-white">Community</h4>
+              <ul className="space-y-2 text-white/70">
+                <li><a href="#" target="_blank" className="hover:text-white transition-colors">Discord</a></li>
+                <li><a href="#" target="_blank" className="hover:text-white transition-colors">Twitter</a></li>
+                <li><a href="#" target="_blank" className="hover:text-white transition-colors">GitHub</a></li>
               </ul>
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold">Resources</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" target="_blank" className="hover:text-foreground transition-colors">Documentation</a></li>
-                <li><a href="#" target="_blank" className="hover:text-foreground transition-colors">Smart Contracts</a></li>
-                <li><a href="#" target="_blank" className="hover:text-foreground transition-colors">Chiliz Chain</a></li>
+              <h4 className="font-semibold text-white">Resources</h4>
+              <ul className="space-y-2 text-white/70">
+                <li><a href="#" target="_blank" className="hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="#" target="_blank" className="hover:text-white transition-colors">Smart Contracts</a></li>
+                <li><a href="#" target="_blank" className="hover:text-white transition-colors">Chiliz Chain</a></li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t mt-12 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 Kitra. Built with ❤️ for the football community on Chiliz.</p>
+          <div className="border-t border-white/20 mt-12 pt-8 text-center text-white/70">
+            <p>&copy; 2025 Kitra. Built with ❤️ for the Paris 2025 Hackathon.</p>
           </div>
         </div>
       </footer>
