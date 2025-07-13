@@ -29,10 +29,12 @@ export class DesignService {
     try {
       // Generate kit using AI
       const generatedKit = await this.generateKitService.generateKit({
+        name: params.name,
+        description: params.description,
         prompt: params.prompt,
         style: params.style,
         colors: params.colors,
-        userAddress: params.user.address,
+        userAddress: params.user.address || '',
       });
 
       // Create design entity
