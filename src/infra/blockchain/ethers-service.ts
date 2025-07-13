@@ -82,24 +82,26 @@ export class EthersService {
       let gasConfig: any = {};
       
       if (highPriority) {
-        console.log("⚡ [EthersService] Using high-priority gas settings...");
-        // High-priority gas settings for Chiliz Spicy testnet
+        console.log("🚀 [EthersService] Using ULTRA HIGH priority gas settings...");
+        // ULTRA HIGH priority gas settings for maximum speed on Chiliz Spicy testnet
         gasConfig = {
-          gasLimit: 500000, // Higher gas limit to ensure execution
-          gasPrice: ethers.parseUnits('20', 'gwei'), // Higher gas price for faster confirmation
+          gasLimit: 800000, // Ultra high gas limit
+          gasPrice: ethers.parseUnits('100', 'gwei'), // Ultra high base gas price
         };
         
-        // Try to get current gas price and increase it
+        // Try to get current gas price and use 400% for ultra fast confirmation
         try {
           const feeData = await this.provider.getFeeData();
           if (feeData.gasPrice) {
-            // Use 150% of current gas price for high priority
-            const highPriorityGasPrice = (feeData.gasPrice * BigInt(150)) / BigInt(100);
-            gasConfig.gasPrice = highPriorityGasPrice;
-            console.log("⚡ [EthersService] Dynamic gas price:", ethers.formatUnits(highPriorityGasPrice, 'gwei'), "gwei");
+            // Use 400% of current gas price for ultra priority (was 150%)
+            const ultraHighPriorityGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
+            // Ensure minimum 50 gwei for ultra fast
+            const minUltraGasPrice = ethers.parseUnits('50', 'gwei');
+            gasConfig.gasPrice = ultraHighPriorityGasPrice > minUltraGasPrice ? ultraHighPriorityGasPrice : minUltraGasPrice;
+            console.log("🚀 [EthersService] ULTRA dynamic gas price:", ethers.formatUnits(gasConfig.gasPrice, 'gwei'), "gwei");
           }
         } catch (feeError) {
-          console.warn("⚠️ [EthersService] Could not get current gas price, using default high priority");
+          console.warn("⚠️ [EthersService] Could not get current gas price, using ultra high default");
         }
       } else {
         console.log("🔄 [EthersService] Using standard gas settings...");
@@ -275,9 +277,29 @@ export class EthersService {
     }
 
     try {
+      // Use ULTRA HIGH priority gas for proposal creation
+      let gasConfig = {
+        gasLimit: 500000, // Ultra high gas limit for proposals
+        gasPrice: ethers.parseUnits('75', 'gwei'), // Ultra high gas price
+      };
+
+      // Get dynamic ultra high gas price
+      try {
+        const feeData = await this.provider.getFeeData();
+        if (feeData.gasPrice) {
+          const ultraHighProposalGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
+          const minUltraGasPrice = ethers.parseUnits('50', 'gwei');
+          gasConfig.gasPrice = ultraHighProposalGasPrice > minUltraGasPrice ? ultraHighProposalGasPrice : minUltraGasPrice;
+          console.log("🚀 [EthersService] ULTRA proposal gas price:", ethers.formatUnits(gasConfig.gasPrice, 'gwei'), "gwei");
+        }
+      } catch (feeError) {
+        console.warn("⚠️ [EthersService] Using ultra high default proposal gas");
+      }
+
       const tx = await this.governorContract.proposeDesignApproval(
         designTokenId,
-        description
+        description,
+        gasConfig
       );
       const receipt = await tx.wait();
       
@@ -317,15 +339,35 @@ export class EthersService {
     try {
       const supportValue = support ? 1 : 0; // 0 = Against, 1 = For, 2 = Abstain
       
+      // Use ULTRA HIGH priority gas for voting
+      let gasConfig = {
+        gasLimit: 400000, // Ultra high gas limit for voting
+        gasPrice: ethers.parseUnits('75', 'gwei'), // Ultra high gas price
+      };
+
+      // Get dynamic ultra high gas price
+      try {
+        const feeData = await this.provider.getFeeData();
+        if (feeData.gasPrice) {
+          const ultraHighVotingGasPrice = (feeData.gasPrice * BigInt(400)) / BigInt(100);
+          const minUltraGasPrice = ethers.parseUnits('50', 'gwei');
+          gasConfig.gasPrice = ultraHighVotingGasPrice > minUltraGasPrice ? ultraHighVotingGasPrice : minUltraGasPrice;
+          console.log("🚀 [EthersService] ULTRA voting gas price:", ethers.formatUnits(gasConfig.gasPrice, 'gwei'), "gwei");
+        }
+      } catch (feeError) {
+        console.warn("⚠️ [EthersService] Using ultra high default voting gas");
+      }
+      
       let tx;
       if (reason) {
         tx = await this.governorContract.castVoteWithReason(
           proposalId,
           supportValue,
-          reason
+          reason,
+          gasConfig
         );
       } else {
-        tx = await this.governorContract.castVote(proposalId, supportValue);
+        tx = await this.governorContract.castVote(proposalId, supportValue, gasConfig);
       }
       
       const receipt = await tx.wait();
