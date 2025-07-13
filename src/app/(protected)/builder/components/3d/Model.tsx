@@ -60,13 +60,10 @@ export const Model = React.memo(function Model({
   
   return (
     <Suspense fallback={
-      <BasicModel 
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
-        pattern={pattern}
-        textureUrl={textureUrl}
-        textureId={textureId}
-      />
+      <mesh>
+        <boxGeometry args={[0.5, 0.5, 0.5]} />
+        <meshStandardMaterial color="#ec4899" opacity={0.5} transparent />
+      </mesh>
     }>
       <ErrorBoundary fallback={
         <BasicModel 

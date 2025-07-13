@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
 import { EthersService } from '@/infra/blockchain/ethers-service';
-import { useAccount } from 'wagmi';
 
 export interface BlockchainDesign {
   tokenId: number;
@@ -9,23 +8,6 @@ export interface BlockchainDesign {
   tokenURI: string;
   mintTime: number;
   isCandidate: boolean;
-}
-
-export interface ProposalData {
-  id: string;
-  designTokenId: number;
-  proposer: string;
-  description: string;
-  proposalType: 'approval' | 'rejection';
-  state: number; // 0=Pending, 1=Active, 2=Canceled, 3=Defeated, 4=Succeeded, 5=Queued, 6=Expired, 7=Executed
-  votes: {
-    for: number;
-    against: number;
-    abstain: number;
-  };
-  startBlock: number;
-  endBlock: number;
-  createdAt: number;
 }
 
 export interface VoteResult {
@@ -48,19 +30,28 @@ class BlockchainService {
       console.log('🔑 Private key available:', !!process.env.BLOCKCHAIN_PRIVATE_KEY);
       console.log('📋 Contract address:', process.env.NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS);
       
+      if (!process.env.BLOCKCHAIN_PRIVATE_KEY) {
+        throw new Error('BLOCKCHAIN_PRIVATE_KEY environment variable is required');
+      }
+      
+      if (!process.env.NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS) {
+        throw new Error('NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS environment variable is required');
+      }
+      
       this.ethersService = new EthersService({
-        rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || 'https://spicy-rpc.chiliz.com',
-        designCandidateAddress: process.env.NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS || '',
-        governorAddress: process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS || '',
-        privateKey: process.env.BLOCKCHAIN_PRIVATE_KEY, // Only for server-side operations
+        rpcUrl: 'https://spicy-rpc.chiliz.com/',
+        designCandidateAddress: process.env.NEXT_PUBLIC_DESIGN_CANDIDATE_ADDRESS,
+        governorAddress: '', // Not needed for simplified voting
+        privateKey: process.env.BLOCKCHAIN_PRIVATE_KEY
       });
+      
       this.isInitialized = true;
-      console.log('✅ [BlockchainService] Initialization complete');
+      console.log('✅ [BlockchainService] Initialized successfully');
     }
   }
 
   /**
-   * Mint a new design as NFT candidate
+   * Mint a new design candidate NFT
    */
   async mintDesignCandidate(
     designerAddress: string,
@@ -69,303 +60,138 @@ class BlockchainService {
     highPriority: boolean = false
   ): Promise<{ tokenId: number; transactionHash: string }> {
     this.ensureInitialized();
-    if (!this.ethersService) {
-      throw new Error('Blockchain service failed to initialize');
-    }
-
-    console.log('🔗 [Blockchain] Minting design NFT:', {
-      designer: designerAddress,
+    console.log('🎨 [BlockchainService] Minting design candidate:', {
+      designer: designerAddress.slice(0, 8) + '...',
       name: designName,
-      metadataUrl: ipfsMetadataUrl
+      ipfs: ipfsMetadataUrl.slice(0, 30) + '...',
+      highPriority
     });
 
-    try {
-      const result = await this.ethersService!.mintDesign(
-        designerAddress,
-        designName,
-        ipfsMetadataUrl,
-        highPriority
-      );
+    const result = await this.ethersService!.mintDesign(
+      designerAddress,
+      designName,
+      ipfsMetadataUrl,
+      highPriority
+    );
 
-      console.log('✅ [Blockchain] Design NFT minted:', {
-        tokenId: result.tokenId,
-        transactionHash: result.transactionHash
-      });
-
-      return result;
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to mint design NFT:', error);
-      throw new Error('Failed to mint design NFT: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
+    console.log('✅ [BlockchainService] Design minted:', result);
+    return result;
   }
 
   /**
    * Get design information from blockchain
    */
   async getDesignInfo(tokenId: number): Promise<BlockchainDesign> {
-    console.log('🔍 [Blockchain] Fetching design info for token:', tokenId);
+    this.ensureInitialized();
+    console.log('🔍 [BlockchainService] Getting design info for token:', tokenId);
 
-    try {
-      const info = await this.ethersService.getDesignInfo(tokenId);
-      
-      const design: BlockchainDesign = {
-        tokenId,
-        designer: info.designer,
-        name: info.name,
-        tokenURI: info.tokenURI,
-        mintTime: info.mintTime,
-        isCandidate: info.isCandidate
-      };
+    const designInfo = await this.ethersService!.getDesignInfo(tokenId);
+    
+    const result: BlockchainDesign = {
+      tokenId,
+      designer: designInfo.designer,
+      name: designInfo.name,
+      tokenURI: designInfo.tokenURI,
+      mintTime: designInfo.mintTime,
+      isCandidate: designInfo.isCandidate
+    };
 
-      console.log('✅ [Blockchain] Design info retrieved:', {
-        tokenId,
-        name: design.name,
-        designer: design.designer.slice(0, 8) + '...'
-      });
-
-      return design;
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to get design info:', error);
-      throw new Error('Failed to get design info: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
+    console.log('✅ [BlockchainService] Design info retrieved:', result);
+    return result;
   }
 
   /**
    * Get all candidate designs from blockchain
    */
   async getCandidateDesigns(): Promise<BlockchainDesign[]> {
-    console.log('🔍 [Blockchain] Fetching all candidate designs');
+    this.ensureInitialized();
+    console.log('🔍 [BlockchainService] Getting all candidate designs...');
 
-    try {
-      const tokenIds = await this.ethersService.getCandidateTokens();
-      
-      if (tokenIds.length === 0) {
-        console.log('📭 [Blockchain] No candidate designs found');
-        return [];
+    const candidateTokens = await this.ethersService!.getCandidateTokens();
+    const designs: BlockchainDesign[] = [];
+
+    for (const tokenId of candidateTokens) {
+      try {
+        const design = await this.getDesignInfo(tokenId);
+        designs.push(design);
+      } catch (error) {
+        console.warn(`⚠️ [BlockchainService] Failed to get info for token ${tokenId}:`, error);
       }
-
-      // Fetch info for each token
-      const designs = await Promise.all(
-        tokenIds.map(tokenId => this.getDesignInfo(tokenId))
-      );
-
-      console.log('✅ [Blockchain] Candidate designs retrieved:', {
-        count: designs.length,
-        tokenIds
-      });
-
-      return designs;
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to get candidate designs:', error);
-      throw new Error('Failed to get candidate designs: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
+
+    console.log('✅ [BlockchainService] Found candidate designs:', designs.length);
+    return designs;
   }
 
   /**
-   * Create a proposal for design approval
-   */
-  async proposeDesignApproval(
-    designTokenId: number,
-    title: string,
-    description: string
-  ): Promise<{ proposalId: string; transactionHash: string }> {
-    console.log('🗳️ [Blockchain] Creating approval proposal for design:', designTokenId);
-
-    try {
-      const result = await this.ethersService.proposeDesignApproval(
-        designTokenId,
-        `${title}: ${description}`
-      );
-
-      console.log('✅ [Blockchain] Approval proposal created:', {
-        proposalId: result.proposalId,
-        designTokenId,
-        transactionHash: result.transactionHash
-      });
-
-      return result;
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to create approval proposal:', error);
-      throw new Error('Failed to create proposal: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
-  }
-
-  /**
-   * Cast a vote on a proposal
-   */
-  async castVote(
-    proposalId: string,
-    support: boolean,
-    reason?: string
-  ): Promise<VoteResult> {
-    console.log('🗳️ [Blockchain] Casting vote:', {
-      proposalId: proposalId.slice(0, 10) + '...',
-      support,
-      hasReason: !!reason
-    });
-
-    try {
-      const result = await this.ethersService.castVote(proposalId, support, reason);
-
-      console.log('✅ [Blockchain] Vote cast successfully:', {
-        transactionHash: result.transactionHash,
-        weight: result.weight,
-        support
-      });
-
-      return {
-        transactionHash: result.transactionHash,
-        weight: result.weight,
-        support
-      };
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to cast vote:', error);
-      throw new Error('Failed to cast vote: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
-  }
-
-  /**
-   * Get proposal information
-   */
-  async getProposalState(proposalId: string): Promise<ProposalData> {
-    console.log('🔍 [Blockchain] Fetching proposal state:', proposalId.slice(0, 10) + '...');
-
-    try {
-      const state = await this.ethersService.getProposalState(proposalId);
-
-      const proposal: ProposalData = {
-        id: proposalId,
-        designTokenId: 0, // This would need to be stored/retrieved from proposal metadata
-        proposer: '', // This would need to be stored/retrieved from proposal metadata
-        description: '', // This would need to be stored/retrieved from proposal metadata
-        proposalType: 'approval', // This would need to be stored/retrieved from proposal metadata
-        state: state.state,
-        votes: {
-          for: state.votes.for,
-          against: state.votes.against,
-          abstain: state.votes.abstain
-        },
-        startBlock: state.snapshot,
-        endBlock: state.deadline,
-        createdAt: Date.now() // This would need to be stored/retrieved from proposal metadata
-      };
-
-      console.log('✅ [Blockchain] Proposal state retrieved:', {
-        proposalId: proposalId.slice(0, 10) + '...',
-        state: proposal.state,
-        totalVotes: proposal.votes.for + proposal.votes.against + proposal.votes.abstain
-      });
-
-      return proposal;
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to get proposal state:', error);
-      throw new Error('Failed to get proposal state: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
-  }
-
-  /**
-   * Get voting power for an address
+   * Get voting power for an address from BasicVoting token
    */
   async getVotingPower(address: string, blockNumber?: number): Promise<number> {
-    console.log('🔍 [Blockchain] Getting voting power for:', address.slice(0, 8) + '...');
+    this.ensureInitialized();
+    console.log('🗳️ [BlockchainService] Getting voting power for:', address.slice(0, 8) + '...');
 
     try {
-      const power = await this.ethersService.getVotingPower(address, blockNumber);
-
-      console.log('✅ [Blockchain] Voting power retrieved:', {
-        address: address.slice(0, 8) + '...',
-        power
-      });
-
-      return power;
+      const votingPower = await this.ethersService!.getVotingPower(address);
+      console.log('✅ [BlockchainService] Voting power:', votingPower);
+      return votingPower;
     } catch (error) {
-      console.error('❌ [Blockchain] Failed to get voting power:', error);
-      throw new Error('Failed to get voting power: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      console.warn('⚠️ [BlockchainService] Failed to get voting power:', error);
+      return 0; // Return 0 if we can't check (e.g., ENS errors on Chiliz)
     }
   }
 
   /**
-   * Check if user has already voted on a proposal
-   */
-  async hasUserVoted(proposalId: string, voterAddress: string): Promise<boolean> {
-    // This would need to be implemented by checking vote events or proposal state
-    // For now, we'll return false
-    console.log('🔍 [Blockchain] Checking if user has voted:', {
-      proposalId: proposalId.slice(0, 10) + '...',
-      voter: voterAddress.slice(0, 8) + '...'
-    });
-
-    try {
-      // TODO: Implement actual vote checking logic
-      // This could be done by:
-      // 1. Querying vote events from the blockchain
-      // 2. Maintaining a database of votes
-      // 3. Using the governor contract's hasVoted function if available
-
-      return false; // Placeholder
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to check vote status:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Start listening to blockchain events
-   */
-  startEventListeners(callbacks: {
-    onDesignMinted?: (event: { tokenId: number; designer: string; name: string; tokenURI: string }) => void;
-    onVoteCast?: (event: { voter: string; proposalId: string; support: number; weight: number; reason: string }) => void;
-  }) {
-    console.log('👂 [Blockchain] Starting event listeners');
-
-    if (callbacks.onDesignMinted) {
-      this.ethersService.onDesignMinted(callbacks.onDesignMinted);
-    }
-
-    if (callbacks.onVoteCast) {
-      this.ethersService.onVoteCast(callbacks.onVoteCast);
-    }
-  }
-
-  /**
-   * Stop all event listeners
-   */
-  stopEventListeners() {
-    console.log('🔇 [Blockchain] Stopping event listeners');
-    this.ethersService.removeAllListeners();
-  }
-
-  /**
-   * Utility function to format blockchain addresses
+   * Format blockchain address for display
    */
   formatAddress(address: string): string {
+    if (!address || address.length < 10) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   }
 
   /**
-   * Utility function to format token amounts
+   * Format token amount for display
    */
   formatTokenAmount(amount: string | number, decimals = 18): string {
-    const value = typeof amount === 'string' ? amount : amount.toString();
-    return ethers.formatUnits(value, decimals);
+    if (typeof amount === 'string') {
+      return ethers.formatUnits(amount, decimals);
+    }
+    return amount.toString();
   }
 
   /**
-   * Get the current block number
+   * Get current block number
    */
   async getCurrentBlock(): Promise<number> {
-    try {
-      // This would need to be implemented in the ethers service
-      return Date.now(); // Placeholder
-    } catch (error) {
-      console.error('❌ [Blockchain] Failed to get current block:', error);
-      throw new Error('Failed to get current block');
+    this.ensureInitialized();
+    const blockNumber = await this.ethersService!['provider'].getBlockNumber();
+    console.log('📦 [BlockchainService] Current block:', blockNumber);
+    return blockNumber;
+  }
+
+  /**
+   * Start listening for blockchain events
+   */
+  startEventListeners(callbacks: {
+    onDesignMinted?: (event: { tokenId: number; designer: string; name: string; tokenURI: string }) => void;
+  }) {
+    this.ensureInitialized();
+    console.log('👂 [BlockchainService] Starting event listeners...');
+    
+    if (callbacks.onDesignMinted) {
+      this.ethersService!.onDesignMinted(callbacks.onDesignMinted);
+    }
+  }
+
+  /**
+   * Stop event listeners
+   */
+  stopEventListeners() {
+    if (this.ethersService) {
+      console.log('🛑 [BlockchainService] Stopping event listeners...');
+      this.ethersService.removeAllListeners();
     }
   }
 }
 
 // Export singleton instance
-export const blockchainService = new BlockchainService();
-
-// Export the class for testing
-export { BlockchainService }; 
+export const blockchainService = new BlockchainService(); 

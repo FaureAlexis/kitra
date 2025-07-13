@@ -129,7 +129,12 @@ export const BuilderLayout = React.memo(function BuilderLayout({
       >
         <Suspense fallback={
           <div className={styles.loadingOverlay}>
-            <div className={styles.loadingSpinner}></div>
+            <div className="flex flex-col items-center">
+              <div className={styles.loadingSpinner}></div>
+              <p className="text-black/70 mt-4 font-medium">
+                Loading 3D model...
+              </p>
+            </div>
           </div>
         }>
           <SafeCanvas>
