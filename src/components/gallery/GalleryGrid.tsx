@@ -185,6 +185,7 @@ export const GalleryGrid: React.FC<GalleryGridProps> = ({
                     transitionDelay: `${globalIndex * 50}ms`
                   }}
                 >
+
                   <JerseyCard
                     design={design}
                     onVote={onVote}

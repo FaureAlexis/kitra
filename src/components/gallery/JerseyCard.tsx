@@ -28,6 +28,8 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
   isPinterestStyle = false,
   isVoting = false
 }) => {
+
+
   const formatCreator = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
@@ -116,10 +118,12 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
 
           {/* Bottom Caption Overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <h3 className="text-white font-medium text-sm mb-1 line-clamp-1">
+            <h3 className="text-white font-medium text-sm mb-2 line-clamp-1">
               {design.name}
             </h3>
-            <div className="flex items-center justify-between">
+            
+            {/* Creator & Stats Row */}
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center">
                   <span className="text-xs font-bold text-white">
@@ -128,10 +132,43 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
                 </div>
                 <span className="text-white/80 text-xs">{formatCreator(design.creator)}</span>
               </div>
-              <div className="flex items-center gap-2 text-white/80 text-xs">
-                <Eye className="h-3 w-3" />
-                <span>{Math.floor(Math.random() * 1000) + 100}</span>
+              <div className="flex items-center gap-3 text-white/80 text-xs">
+                <div className="flex items-center gap-1">
+                  <span className="text-white">🗳️</span>
+                  <span>{design.votes}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Eye className="h-3 w-3" />
+                  <span>{Math.floor(Math.random() * 1000) + 100}</span>
+                </div>
               </div>
+            </div>
+
+            {/* Action Buttons Row */}
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-7 px-3 text-xs bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white flex-1"
+                asChild
+              >
+                <Link href={`/builder?load=${design.id}`}>
+                  Load
+                </Link>
+              </Button>
+              {design.status === 'candidate' && onVote && (
+                <Button
+                  size="sm"
+                  className="h-7 px-3 text-xs bg-red-500 hover:bg-red-600 text-white border-0 flex-1"
+                  onClick={() => {
+                    console.log('🗳️ VOTE CLICKED (Pinterest):', design.id);
+                    onVote(design.id);
+                  }}
+                  disabled={isVoting}
+                >
+                  {isVoting ? 'Voting...' : 'Vote'}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -260,13 +297,13 @@ export const JerseyCard: React.FC<JerseyCardProps> = ({
                 Load
               </Link>
             </Button>
-            {design.status === 'candidate' && (
-              <Button
-                size="sm"
-                className="h-8 px-3 text-xs bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                onClick={() => onVote?.(design.id)}
-                disabled={isVoting}
-              >
+            {design.status === 'candidate' && onVote && (
+                              <Button
+                  size="sm"
+                  className="h-8 px-3 text-xs bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  onClick={() => onVote?.(design.id)}
+                  disabled={isVoting}
+                >
                 {isVoting ? 'Voting...' : 'Vote'}
                 <ArrowRight className="h-3 w-3 ml-1" />
               </Button>

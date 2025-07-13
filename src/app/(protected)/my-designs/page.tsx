@@ -13,6 +13,7 @@ import { useDesigns } from '@/hooks/useDesigns';
 import { appKit } from '@/lib/web3-config';
 import { toast } from 'sonner';
 import { JerseyCard, JerseyCardSkeleton } from '@/components/gallery/JerseyCard';
+import { MintingPanel } from '@/components/minting/MintingPanel';
 
 export default function MyDesignsPage() {
   const walletData = useWalletData();
@@ -344,6 +345,11 @@ export default function MyDesignsPage() {
               Published ({userDesigns.filter(d => d.status === 'published').length})
             </Button>
           </div>
+        </div>
+
+        {/* Minting Panel - Shows when user has draft designs */}
+        <div className="mb-8">
+          <MintingPanel className="bg-background/50 backdrop-blur-sm border-border/50" />
         </div>
 
         {/* Error State */}
